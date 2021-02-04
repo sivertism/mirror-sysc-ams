@@ -1,0 +1,7 @@
+$Id: RELEASENOTES 1984 2016-04-04 11:10:24Z karsten $
+
+This is SystemC-AMS 2.1 proof-of-concept implementation
+
+Accellera SystemC AMS Extension 2.0 and IEEE P1666.1 are fully supported
+
+All known bugs fixed
