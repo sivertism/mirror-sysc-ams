@@ -51,17 +51,56 @@ static const double ZERO_VALUE=0.0;
 
 void sca_con_interactive_trace_data::register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback cb,void* cb_arg)
 {
-
-	sc_core::sc_spawn_options opt;
-	opt.spawn_method();
-
 	this->trace_cb_ptr=cb;
 	this->trace_cb_arg=cb_arg;
 
+	if(!this->callback_registered)
+	{
+		this->callback_registered=true;
+		sc_core::sc_spawn_options opt;
+		opt.spawn_method();
 
-	sc_core::sc_spawn(sc_bind(&sca_con_interactive_trace_data::trace_callback,this),
+
+		sc_core::sc_spawn(sc_bind(&sca_con_interactive_trace_data::trace_callback,this),
 			sc_core::sc_gen_unique_name("trace_callback"),&opt);
+	}
 }
+
+
+
+void sca_con_interactive_trace_data::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	this->callbacks.push_back(&func);
+
+
+	if(!this->callback_registered)
+	{
+		this->callback_registered=true;
+
+		sc_core::sc_spawn_options opt;
+		opt.spawn_method();
+
+		sc_core::sc_spawn(sc_bind(&sca_con_interactive_trace_data::trace_callback,this),
+			sc_core::sc_gen_unique_name("trace_callback"),&opt);
+	}
+}
+
+bool sca_con_interactive_trace_data::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	for(std::vector<sca_util::sca_traceable_object::callback_functor_base*>::iterator
+			it=this->callbacks.begin();it!=this->callbacks.end();++it)
+	{
+		if(*it == &func)
+		{
+			this->callbacks.erase(it);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -76,7 +115,12 @@ void sca_con_interactive_trace_data::trace_callback()
 			if(initialize_delta_waited) return;
 
 			initialize_delta_waited=true;
-			next_trigger(sc_core::SC_ZERO_TIME);
+
+			if(sc_core::sc_delta_count()<2)
+			{
+				next_trigger(sc_core::SC_ZERO_TIME);
+			}
+
 			return;
 		}
 
@@ -112,6 +156,12 @@ void sca_con_interactive_trace_data::trace_callback()
 		if(this->trace_cb_ptr!=NULL)
 		{
 			this->trace_cb_ptr(this->trace_cb_arg);
+		}
+
+
+		for(unsigned long i=0;i<this->callbacks.size();++i)
+		{
+			(*(this->callbacks[i]))();
 		}
 
 		this->trace_callback_cnt++;
@@ -161,6 +211,8 @@ void sca_con_interactive_trace_data::construct()
 	{
 		enable_multirate();
 	}
+
+	this->callback_registered=false;
 
 }
 
@@ -227,7 +279,7 @@ void sca_con_interactive_trace_data::enable_multirate()
 	{
 		sca_core::sca_implementation::sca_solver_base* solv=module->get_sync_domain();
 		if(solv==NULL) return;
-		module->get_sync_domain()->add_solver_trace(data);
+		if(!module->get_sync_domain()->add_solver_trace(data)) return;
 	}
 
 	multirate=true;

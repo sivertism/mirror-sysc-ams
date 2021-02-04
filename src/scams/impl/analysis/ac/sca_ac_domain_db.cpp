@@ -26,10 +26,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1523 $
-   SVN last checkin  :  $Date: 2013-02-17 21:36:57 +0100 (Sun, 17 Feb 2013) $
+   SVN Version       :  $Revision: 2046 $
+   SVN last checkin  :  $Date: 2017-09-20 12:41:42 +0000 (Wed, 20 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_domain_db.cpp 1523 2013-02-17 20:36:57Z karsten $
+   SVN Id            :  $Id: sca_ac_domain_db.cpp 2046 2017-09-20 12:41:42Z karsten $
 
  *****************************************************************************/
 
@@ -59,6 +59,7 @@ sca_ac_domain_db::sca_ac_domain_db()
     current_y=NULL;
     current_w=0.0;
     initialized=false;
+    elaborated=false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,7 +84,8 @@ void sca_ac_domain_db::register_entity(sca_ac_domain_entity* entity)
 
 void sca_ac_domain_db::register_arc(sc_core::sc_interface* arc)
 {
-    arcs.insert(arc);
+	//if not yet inserted -> insert
+	arcs.insert(arc);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -116,9 +118,10 @@ sc_core::sc_object* sca_ac_domain_db::find_object_for_id(long id)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-long sca_ac_domain_db::get_arc_id(sc_core::sc_interface* arc)
+long sca_ac_domain_db::get_arc_id(const sc_core::sc_interface* arc) const
 {
-    std::map<sc_core::sc_interface*,long>::iterator it=arc_map.find(arc);
+    std::map<sc_core::sc_interface*,long>::const_iterator it=
+    		arc_map.find(const_cast<sc_core::sc_interface*>(arc));
     if(it==arc_map.end()) return -1;
     else                  return it->second;
 }

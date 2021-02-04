@@ -27,7 +27,7 @@
  Created on: 16.11.2009
 
  SVN Version       :  $Revision: 1305 $
- SVN last checkin  :  $Date: 2012-04-11 17:13:49 +0200 (Wed, 11 Apr 2012) $
+ SVN last checkin  :  $Date: 2012-04-11 15:13:49 +0000 (Wed, 11 Apr 2012) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_trace_mode.cpp 1305 2012-04-11 15:13:49Z karsten $
 

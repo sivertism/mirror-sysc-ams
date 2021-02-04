@@ -26,10 +26,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1265 $
-   SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+   SVN Version       :  $Revision: 2046 $
+   SVN last checkin  :  $Date: 2017-09-20 12:41:42 +0000 (Wed, 20 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_domain_db.h 1265 2011-11-19 20:43:31Z karsten $
+   SVN Id            :  $Id: sca_ac_domain_db.h 2046 2017-09-20 12:41:42Z karsten $
 
  *****************************************************************************/
 
@@ -140,11 +140,21 @@ public:
 
     sc_core::sc_object* get_active_object()
     {
-    	return active_object;
+    	return dynamic_cast<sc_core::sc_object*>(active_object);
+    }
+
+    bool is_elaborated()
+    {
+    	return elaborated;
+    }
+
+    void set_elaborated()
+    {
+    	elaborated=true;
     }
 
 
-    long get_arc_id(sc_core::sc_interface* arc);
+    long get_arc_id(const sc_core::sc_interface* arc) const;
     long get_port_id(const sc_core::sc_port_base* port);
     long get_inport_id(const sc_core::sc_port_base* port);
     long get_outport_id(const sc_core::sc_port_base* port);
@@ -190,12 +200,14 @@ private:
 
     void init_arc_map_for_add_eqs();
 
-    sc_core::sc_object* active_object;
+    sca_ac_analysis::sca_ac_object* active_object;
     bool ac_domain;
     bool noise_domain;
     bool bflag;   //signs that all inports set to zero -> B calculation
                   //is used for noise domain to ensure an independend value
     bool initialized;
+
+    bool elaborated;
 };
 
 

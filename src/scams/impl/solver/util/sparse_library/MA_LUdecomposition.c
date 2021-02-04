@@ -27,7 +27,7 @@
  Created on: 19.12.2011
 
  SVN Version       :  $Revision: 1754 $
- SVN last checkin  :  $Date: 2014-05-26 11:18:44 +0200 (Mon, 26 May 2014) $
+ SVN last checkin  :  $Date: 2014-05-26 09:18:44 +0000 (Mon, 26 May 2014) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: MA_LUdecomposition.c 1754 2014-05-26 09:18:44Z karsten $
 

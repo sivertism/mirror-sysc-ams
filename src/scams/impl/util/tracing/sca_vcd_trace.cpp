@@ -26,10 +26,10 @@
 
  Created on: Jan 23, 2010
 
- SVN Version       :  $Revision: 1930 $
- SVN last checkin  :  $Date: 2016-02-26 17:16:13 +0100 (Fri, 26 Feb 2016) $
+ SVN Version       :  $Revision: 2017 $
+ SVN last checkin  :  $Date: 2016-11-25 11:48:29 +0000 (Fri, 25 Nov 2016) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_vcd_trace.cpp 1930 2016-02-26 16:16:13Z karsten $
+ SVN Id            :  $Id: sca_vcd_trace.cpp 2017 2016-11-25 11:48:29Z karsten $
 
  *****************************************************************************/
 
@@ -230,7 +230,11 @@ bool sca_vcd_trace::write_type_def(sca_type_explorer_base& typeinfo)
 		//dynamic lengths
 		(*outstr) << "integer " << 8*NUM_VCD_STRING_CHAR << ' ';
 		return false;
-	case sca_type_explorer_base::UNKNOWN:
+	case sca_type_explorer_base::SCA_COMPLEX:
+		//for complex we write the absolute value
+		(*outstr) << "real " << 1 << ' ';
+		return false;
+	default:
 		(*outstr) << "$comment  Unnkown type for the next variable $end" << std::endl;
 		(*outstr) << "real " << 1 << ' ';
 		return true;
@@ -512,7 +516,12 @@ void sca_vcd_trace::write_value(sca_trace_value_handler_base* value)
 		(*outstr) << ' ';
 		return;
 	}
-	case sca_type_explorer_base::UNKNOWN:
+	case sca_type_explorer_base::SCA_COMPLEX:
+		//we write tha absolute value
+		(*outstr) << 'r' << std::setprecision(16) << std::abs(*(static_cast<const sca_util::sca_complex*>(data)));
+		(*outstr) << ' ';
+		return;
+    default:
 	{
 		return;
 	}

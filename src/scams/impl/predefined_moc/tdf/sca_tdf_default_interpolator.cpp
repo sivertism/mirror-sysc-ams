@@ -27,7 +27,7 @@
  Created on: 18.10.2011
 
  SVN Version       :  $Revision: 1702 $
- SVN last checkin  :  $Date: 2014-04-22 12:16:56 +0200 (Tue, 22 Apr 2014) $ (UTC)
+ SVN last checkin  :  $Date: 2014-04-22 10:16:56 +0000 (Tue, 22 Apr 2014) $ (UTC)
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_tdf_default_interpolator.cpp 1702 2014-04-22 10:16:56Z karsten $
 

@@ -27,7 +27,7 @@
   Created on: 02.01.2010
 
    SVN Version       :  $Revision: 1444 $
-   SVN last checkin  :  $Date: 2012-12-13 18:38:40 +0100 (Thu, 13 Dec 2012) $
+   SVN last checkin  :  $Date: 2012-12-13 17:38:40 +0000 (Thu, 13 Dec 2012) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_solve_ac_linear.h 1444 2012-12-13 17:38:40Z karsten $
 

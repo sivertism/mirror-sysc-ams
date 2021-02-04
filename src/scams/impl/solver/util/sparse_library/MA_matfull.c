@@ -27,7 +27,7 @@
  Created on: 22.10.2009
 
  SVN Version       :  $Revision: 1446 $
- SVN last checkin  :  $Date: 2012-12-14 09:19:48 +0100 (Fri, 14 Dec 2012) $
+ SVN last checkin  :  $Date: 2012-12-14 08:19:48 +0000 (Fri, 14 Dec 2012) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: MA_matfull.c 1446 2012-12-14 08:19:48Z karsten $
 

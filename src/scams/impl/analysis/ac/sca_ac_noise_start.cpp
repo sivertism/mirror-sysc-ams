@@ -28,10 +28,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1944 $
-   SVN last checkin  :  $Date: 2016-03-11 14:28:43 +0100 (Fri, 11 Mar 2016) $
+   SVN Version       :  $Revision: 2045 $
+   SVN last checkin  :  $Date: 2017-09-19 14:05:56 +0000 (Tue, 19 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_noise_start.cpp 1944 2016-03-11 13:28:43Z karsten $
+   SVN Id            :  $Id: sca_ac_noise_start.cpp 2045 2017-09-19 14:05:56Z karsten $
 
  *****************************************************************************/
 
@@ -42,6 +42,7 @@
 #include "scams/impl/analysis/ac/sca_ac_domain_globals.h"
 #include "scams/impl/analysis/ac/sca_ac_domain_solver.h"
 
+
 namespace sca_ac_analysis
 {
 
@@ -51,6 +52,7 @@ void sca_ac_noise_start(const sca_util::sca_vector<double>& frequencies)
     std::vector<double> omegas;
     for(unsigned long i=0;i<frequencies.length();i++)
         omegas.push_back(2.0*M_PI*frequencies(i));
+
 
     sca_ac_analysis::sca_implementation::sca_ac_domain_solver
 							ac_solver(sca_ac_analysis::sca_implementation::get_ac_database(),true);

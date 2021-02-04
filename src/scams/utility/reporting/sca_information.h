@@ -27,7 +27,7 @@
  Created on: 08.03.2009
 
  SVN Version       :  $Revision: 1911 $
- SVN last checkin  :  $Date: 2016-02-16 14:51:22 +0100 (Tue, 16 Feb 2016) $
+ SVN last checkin  :  $Date: 2016-02-16 13:51:22 +0000 (Tue, 16 Feb 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_information.h 1911 2016-02-16 13:51:22Z karsten $
 

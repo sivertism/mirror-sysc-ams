@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1892 $
-   SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $
+   SVN Version       :  $Revision: 2112 $
+   SVN last checkin  :  $Date: 2020-03-12 13:06:46 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_r.cpp 1892 2016-01-10 11:59:12Z karsten $
+   SVN Id            :  $Id: sca_eln_r.cpp 2112 2020-03-12 13:06:46Z karsten $
 
  *****************************************************************************/
 
@@ -47,10 +47,10 @@ namespace sca_eln
 sca_r::sca_r(sc_core::sc_module_name, double value_) :
 		p("p"), n("n"), value("value", value_)
 {
-    through_value_available = true;
-    through_value_type      = "Current";
-    through_value_unit      = "A";
     nadd=-1;
+
+    unit="A";
+    domain="I";
 }
 
 const char* sca_r::kind() const
@@ -91,13 +91,9 @@ void sca_r::matrix_stamps()
 
 bool sca_r::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type=through_value_type;
-    data.unit=through_value_unit;
-
     //trace will be activated after every complete cluster calculation
     //by teh synchronization layer
-    get_sync_domain()->add_solver_trace(data);
-    return true;
+    return get_sync_domain()->add_solver_trace(data);
 }
 
 void sca_r::trace(long id,sca_util::sca_implementation::sca_trace_buffer& buffer)
@@ -178,6 +174,66 @@ bool sca_r::register_trace_callback(sca_trace_callback cb,void* cb_arg)
 
 }
 
+
+bool sca_r::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		this->trd=new sca_core::sca_implementation::sca_con_interactive_trace_data(this);
+	}
+
+
+	this->trd->register_trace_callback(func);
+
+	return true;
+
+}
+
+
+bool sca_r::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		return false;
+	}
+
+
+	return this->trd->remove_trace_callback(func);
+
+}
+
+/**
+   * experimental physical domain interface
+*/
+void sca_r::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_r::get_unit() const
+{
+	return unit;
+}
+
+void sca_r::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_r::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_r::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_r::get_domain() const
+{
+	return domain;
+}
 
 
 } //namespace sca_eln

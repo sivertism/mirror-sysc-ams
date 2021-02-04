@@ -3,7 +3,7 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,14 +24,14 @@
 
  sca_implementation_info.h - functions for accessing implementation info
 
- Original Author: Karsten Einwich Fraunhofer IIS/EAS Dresden
+ Original Author: Karsten Einwich COSEDA Technologies GmbH
 
  Created on: 08.03.2009
 
- SVN Version       :  $Revision: 1984 $
- SVN last checkin  :  $Date: 2016-04-04 13:10:24 +0200 (Mon, 04 Apr 2016) $
+ SVN Version       :  $Revision: 2113 $
+ SVN last checkin  :  $Date: 2020-03-12 13:42:40 +0000 (Thu, 12 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_implementation_info.h 1984 2016-04-04 11:10:24Z karsten $
+ SVN Id            :  $Id: sca_implementation_info.h 2113 2020-03-12 13:42:40Z karsten $
 
  *****************************************************************************/
 /*
@@ -50,15 +50,15 @@ namespace sca_core
 #define IEEE_16661_SYSTEMC_AMS 201601L
 
 #define SCA_VERSION_MAJOR        2
-#define SCA_VERSION_MINOR        1
+#define SCA_VERSION_MINOR        3
 #define SCA_VERSION_PATCH        0
 #define SCA_VERSION_ORGINATOR    "COSEDA"
-#define SCA_VERSION_RELEASE_DATE "20160404"
+#define SCA_VERSION_RELEASE_DATE "20200312"
 #define SCA_VERSION_PRERELEASE   "RELEASE"
 #define SCA_IS_PRERELEASE        0
-#define SCA_VERSION              "2.1.0-COSEDA"
+#define SCA_VERSION              "2.3.0-COSEDA"
 #define SCA_COPYRIGHT            "        Copyright (c) 2010-2014  by Fraunhofer-Gesellschaft IIS/EAS\n" \
-	                             "        Copyright (c) 2015-2016  by COSEDA Technologies GmbH\n" \
+	                             "        Copyright (c) 2015-2020  by COSEDA Technologies GmbH\n" \
                                  "        Licensed under the Apache License, Version 2.0"
 
 

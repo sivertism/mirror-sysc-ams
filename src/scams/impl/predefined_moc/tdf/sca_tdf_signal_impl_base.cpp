@@ -29,10 +29,10 @@
 
   Created on: 06.08.2009
 
-   SVN Version       :  $Revision: 1892 $
-   SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $
+   SVN Version       :  $Revision: 2106 $
+   SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_tdf_signal_impl_base.cpp 1892 2016-01-10 11:59:12Z karsten $
+   SVN Id            :  $Id: sca_tdf_signal_impl_base.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 
@@ -270,6 +270,8 @@ void sca_tdf_signal_impl_base::construct()
 
     force_value_flag=false;
     scheduled_force_value_flag=false;
+
+    callback_registered=false;
 }
 
 
@@ -325,6 +327,7 @@ sc_dt::int64 sca_tdf_signal_impl_base::get_number_of_trace_value_sample() const
 	{
 		std::ostringstream str;
 		str << "Internal not possible error for interactive tracing (SystemC time < SystemC-AMS time)";
+		str << " SystemC time: " << sctime << " sca time: " << ctime << " for signal: " << this->name();
 		SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
 	}
 
@@ -365,45 +368,20 @@ sc_dt::int64 sca_tdf_signal_impl_base::get_number_of_trace_value_sample() const
 		return -1;
 	}
 
+	sca_core::sca_time time_period=get_timestep_calculated_ref(driver_port);
 
+	//the request sample has the timestamp of the next sample to calculate
+	//in this case we must use the old sample
 	if(next_sca_time==sctime) //in this case we use the old sample
 	{
+
 		if(sctime!=sc_core::SC_ZERO_TIME)
 			sctime-=sc_core::sc_get_time_resolution();
 	}
 
-	sca_core::sca_time dtime=sctime-ctime;
-
-	sca_core::sca_time time_period=get_timestep_calculated_ref(driver_port);
-	sca_core::sca_time cluster_period=csync_data->cluster_period;
-
-	//cluster not yet started
-	if(dtime>=cluster_period)
-	{
-		if(dtime==cluster_period) //cluster not yet started
-		{
-			dtime=sc_core::SC_ZERO_TIME;
-		}
-		else
-		{
-			std::ostringstream str;
-			str << "Internal not possible error for interactive tracing (time difference greater than period)";
-			SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
-		}
-	}
-
 
 	//calculate sample in buffer
-	sc_dt::uint64 nsample = dtime.value()/time_period.value();
-
-
-	if(nsample>=buffer_size)
-	{
-		std::ostringstream str;
-		str << "Internal not possible error for interactive tracing (wrong buffer access)";
-		str << " nsample: " << nsample << " ctime: " << ctime << " sctime: " << sctime << " dtime: " << dtime << " time_period: " << time_period;
-		SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
-	}
+	sc_dt::uint64 nsample = (sctime.value()/time_period.value())%buffer_size;
 
 	return nsample;
 
@@ -524,7 +502,12 @@ void sca_tdf_signal_impl_base::trace_callback()
 {
 	if(csync_data==NULL) //we try it after the next delta again
 	{
-		next_trigger(sc_core::SC_ZERO_TIME);
+		if(sc_core::sc_delta_count()<2) //we try it after the next delta again
+		{                               //due it is may not elaborated
+			next_trigger(sc_core::SC_ZERO_TIME);
+		}
+
+		//otherwise the signal may not belongs to any cluster
 		return;
 	}
 
@@ -554,6 +537,11 @@ void sca_tdf_signal_impl_base::trace_callback()
 			this->trace_cb_ptr(this->trace_cb_arg);
 		}
 
+		for(unsigned long i=0;i<this->callbacks.size();++i)
+		{
+			(*(this->callbacks[i]))();
+		}
+
 		this->trace_callback_cnt++;
 	}
 
@@ -573,18 +561,61 @@ void sca_tdf_signal_impl_base::trace_callback()
 
 bool sca_tdf_signal_impl_base::register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback cb,void* cb_arg)
 {
-	sc_core::sc_spawn_options opt;
-	opt.spawn_method();
-
 	this->trace_cb_ptr=cb;
 	this->trace_cb_arg=cb_arg;
 
+	if(!this->callback_registered)
+	{
+		sc_core::sc_spawn_options opt;
+		opt.spawn_method();
 
-	sc_core::sc_spawn(sc_bind(&sca_tdf_signal_impl_base::trace_callback,this),
-			sc_core::sc_gen_unique_name("trace_callback"),&opt);
+
+
+		sc_core::sc_spawn(sc_bind(&sca_tdf_signal_impl_base::trace_callback,this),
+				sc_core::sc_gen_unique_name("trace_callback"),&opt);
+		this->callback_registered=true;
+	}
 
 	return true;
 
+}
+
+
+bool sca_tdf_signal_impl_base::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+
+	this->callbacks.push_back(&func);
+
+	if(!this->callback_registered)
+	{
+		sc_core::sc_spawn_options opt;
+		opt.spawn_method();
+
+
+		sc_core::sc_spawn(sc_bind(&sca_tdf_signal_impl_base::trace_callback,this),
+				sc_core::sc_gen_unique_name("trace_callback"),&opt);
+
+		this->callback_registered=true;
+	}
+
+	return true;
+
+}
+
+bool sca_tdf_signal_impl_base::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+
+	for(std::vector<sca_util::sca_traceable_object::callback_functor_base*>::iterator
+			it=this->callbacks.begin();it!=this->callbacks.end();++it)
+	{
+		if(*it == &func)
+		{
+			this->callbacks.erase(it);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
@@ -593,8 +624,6 @@ bool sca_tdf_signal_impl_base::register_trace_callback(sca_util::sca_traceable_o
 
 bool sca_tdf_signal_impl_base::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type="-";
-    data.unit="-";
     //trace will be activated after every complete cluster calculation
     //by the synchronization layer
     if(get_synchronization_if()==NULL)
@@ -630,7 +659,6 @@ void sca_tdf_signal_impl_base::trace(long id,sca_util::sca_implementation::sca_t
         ctime+=time_period;
     }
 }
-
 
 } //namespace sca_implementation
 } //namespace sca_tdf

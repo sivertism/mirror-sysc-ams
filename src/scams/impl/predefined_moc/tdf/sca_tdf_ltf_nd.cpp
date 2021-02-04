@@ -27,7 +27,7 @@
  Created on: 09.10.2009
 
  SVN Version       :  $Revision: 1563 $
- SVN last checkin  :  $Date: 2013-05-03 17:06:50 +0200 (Fri, 03 May 2013) $
+ SVN last checkin  :  $Date: 2013-05-03 15:06:50 +0000 (Fri, 03 May 2013) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_tdf_ltf_nd.cpp 1563 2013-05-03 15:06:50Z karsten $
 

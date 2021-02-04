@@ -27,7 +27,7 @@
   Created on: Nov 14, 2011
 
    SVN Version       :  $Revision: 1700 $
-   SVN last checkin  :  $Date: 2014-04-22 11:19:48 +0200 (Tue, 22 Apr 2014) $
+   SVN last checkin  :  $Date: 2014-04-22 09:19:48 +0000 (Tue, 22 Apr 2014) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_delay_buffer_base.cpp 1700 2014-04-22 09:19:48Z karsten $
 

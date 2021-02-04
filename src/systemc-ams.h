@@ -30,7 +30,7 @@
   Created on: 03.03.2009
 
    SVN Version       :  $Revision: 1914 $
-   SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+   SVN last checkin  :  $Date: 2016-02-23 18:06:06 +0000 (Tue, 23 Feb 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: systemc-ams.h 1914 2016-02-23 18:06:06Z karsten $
 

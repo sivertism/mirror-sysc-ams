@@ -26,10 +26,10 @@
 
   Created on: 15.05.2009
 
-   SVN Version       :  $Revision: 1265 $
-   SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+   SVN Version       :  $Revision: 2027 $
+   SVN last checkin  :  $Date: 2017-01-30 15:44:45 +0000 (Mon, 30 Jan 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_trace_file_base.h 1265 2011-11-19 20:43:31Z karsten $
+   SVN Id            :  $Id: sca_trace_file_base.h 2027 2017-01-30 15:44:45Z karsten $
 
  *****************************************************************************/
 
@@ -142,6 +142,8 @@ public:
 private:
 	std::ofstream  fout;
 	bool closed;
+
+	std::string fname;
 };
 
 

@@ -27,7 +27,7 @@
  Created on: 05.04.2012
 
  SVN Version       :  $Revision: 1302 $
- SVN last checkin  :  $Date: 2012-04-05 16:56:28 +0200 (Thu, 05 Apr 2012) $ (UTC)
+ SVN last checkin  :  $Date: 2012-04-05 14:56:28 +0000 (Thu, 05 Apr 2012) $ (UTC)
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_max_time.h 1302 2012-04-05 14:56:28Z karsten $
 

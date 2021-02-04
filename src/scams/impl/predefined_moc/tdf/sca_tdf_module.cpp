@@ -28,10 +28,10 @@
 
  Created on: 05.08.2009
 
- SVN Version       :  $Revision: 1947 $
- SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $
+ SVN Version       :  $Revision: 2082 $
+ SVN last checkin  :  $Date: 2020-01-24 13:06:35 +0000 (Fri, 24 Jan 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_module.cpp 1947 2016-03-13 20:11:21Z karsten $
+ SVN Id            :  $Id: sca_tdf_module.cpp 2082 2020-01-24 13:06:35Z karsten $
 
  *****************************************************************************/
 
@@ -70,7 +70,7 @@ void sca_module::construct()
 	sig_proc_method
 			= static_cast<sca_module_method> (&sca_tdf::sca_module::processing);
 
-	ac_processing_method= static_cast<sca_module_method> (&sca_tdf::sca_module::ac_processing);
+	ac_processing_method= static_cast<sca_module_method> (&sca_tdf::sca_module::ac_dummy);
 
 	//obsolete
 	post_method
@@ -151,14 +151,14 @@ void sca_module::validate_port_attributes()
 
 }
 
+void sca_module::ac_processing()
+{
+	(this->*ac_processing_method)();
+}
 
 void sca_module::elaborate()
 {
 	sca_core::sca_module::elaborate(); // call base class method
-	sca_ac_analysis::sca_implementation::sca_ac_domain_register_entity(
-	        this,
-	        static_cast<sca_ac_analysis::sca_implementation::sca_ac_domain_method>
-				(ac_processing_method));
 
 	//check for not allowed SystemC objects
 	std::vector<sc_core::sc_object*> objl=get_child_objects();
@@ -386,7 +386,7 @@ void sca_module::processing()
 	 }
 }
 
-void sca_module::ac_processing()
+void sca_module::ac_dummy()
 {
 	 no_default_ac_processing=true;
 }

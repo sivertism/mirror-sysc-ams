@@ -15,7 +15,7 @@ EXTRA_DIST += \
 	NOTICE \
 	README \
 	RELEASENOTES \
-	msvc80
+	msvc12
 
 
 debug:

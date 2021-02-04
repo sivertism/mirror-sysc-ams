@@ -26,10 +26,10 @@
 
  Created on: 22.10.2009
 
- SVN Version       :  $Revision: 1715 $
- SVN last checkin  :  $Date: 2014-04-27 16:37:25 +0200 (Sun, 27 Apr 2014) $
+ SVN Version       :  $Revision: 2100 $
+ SVN last checkin  :  $Date: 2020-02-19 14:29:32 +0000 (Wed, 19 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: linear_analog_solver.h 1715 2014-04-27 14:37:25Z karsten $
+ SVN Id            :  $Id: linear_analog_solver.h 2100 2020-02-19 14:29:32Z karsten $
 
  *****************************************************************************/
 
@@ -221,6 +221,15 @@ extern "C"
 		  int alg					/**< cur_algorithm: 1(Euler), 2(Trapez) */
 		  );
 
+
+  /**
+   * The method <i>ana_set_algorithm</i> sets the euler steps after reinit
+   */
+  void ana_set_reinit_steps(
+		  sca_solv_data* data,		/**< internal solver data */
+		  int steps					/**< cur_algorithm: number of steps */
+		  );
+
   /**
    * The method <i>ana_get_dimension</i> outputs the rank of the system of
    * equations <i>data->dim</i>.
@@ -259,17 +268,6 @@ extern "C"
 		  int alg					/**< cur_algorithm: 1(Euler), 2(Trapez) */
 		  );
 
-  /**
-   * The method <i>ana_set_variable_step_size</i> sets the current time step
-   * <i>data->h_temp = h_new</i> and the reciprocal difference to the previous
-   * time step <i>data->h_diff = h_diff</i>.
-   */
-  void ana_set_variable_step_size(
-		  sca_solv_data* data,		/**< internal solver data */
-		  double h_new,				/**< reciprocal of current step size */
-		  double h_diff				/**< reciprocal difference between old and
-		  	  	  	  	  	  	  	  current step size */
-		  );
 
   /************************************/
 

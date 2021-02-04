@@ -26,10 +26,10 @@
 
  Created on: 14.05.2009
 
- SVN Version       :  $Revision: 1608 $
- SVN last checkin  :  $Date: 2013-08-22 16:09:50 +0200 (Thu, 22 Aug 2013) $
+ SVN Version       :  $Revision: 2115 $
+ SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_synchronization_layer.h 1608 2013-08-22 14:09:50Z karsten $
+ SVN Id            :  $Id: sca_synchronization_layer.h 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -63,6 +63,8 @@ public:
 
 	//reschedule cluster with cluster_id
 	void reschedule_cluster(unsigned long cluster_id);
+
+	sc_core::sc_object* get_current_context();
 
 private:
 

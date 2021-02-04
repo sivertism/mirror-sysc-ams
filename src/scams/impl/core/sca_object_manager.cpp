@@ -26,10 +26,10 @@
 
  Created on: 14.05.2009
 
- SVN Version       :  $Revision: 1914 $
- SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+ SVN Version       :  $Revision: 2115 $
+ SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_object_manager.cpp 1914 2016-02-23 18:06:06Z karsten $
+ SVN Id            :  $Id: sca_object_manager.cpp 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -80,6 +80,8 @@ sca_object_manager::sca_object_manager()
 	synchronization = new sca_synchronization_layer();
 
 	init_done = false;
+
+	object_deleted=false;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -98,6 +100,11 @@ sca_object_manager::~sca_object_manager()
 	views=NULL;
 
 	init_done = false;
+}
+
+sc_core::sc_object* sca_object_manager::get_current_context()
+{
+	return synchronization==NULL?NULL:synchronization->get_current_context();
 }
 
 //////////////////////////////////////////////////////////////////
@@ -186,6 +193,9 @@ bool sca_object_manager::remove_module(
 			>= sca_module_list.end()))
 		return false;
 	sca_module_list.erase(instance_number);
+
+	object_deleted=true;
+
 	return true;
 }
 
@@ -271,6 +281,8 @@ bool sca_object_manager::remove_interface(
 		return false;
 
 	sca_interface_list.erase(interface_number);
+	object_deleted=true;
+
 	return true;
 }
 
@@ -292,6 +304,8 @@ bool sca_object_manager::remove_channel(
 		return false;
 
 	sca_channel_list.erase(channel_number);
+
+	object_deleted=true;
 	return true;
 }
 

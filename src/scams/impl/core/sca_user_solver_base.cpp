@@ -113,16 +113,27 @@ const char* sca_user_solver_base::kind() const
 
 //will be overloaded by the user solver
 //initializes a trace, is called by SystemC-AMS
-void sca_user_solver_base::trace_init(sca_util::sca_traceable_object*,int id)
+//returns true if successful
+bool sca_user_solver_base::trace_init(sca_util::sca_traceable_object*,int id)
 {
+	return false;
 }
 
 
+sca_util::sca_implementation::sca_trace_object_data& sca_user_solver_base::get_trace_obj_data(int id)
+{
+	sca_util::sca_implementation::sca_trace_object_data& data=generic_solver->get_trace_obj_data(id);
+	return data;
+}
+
+
+/*
 //this function will be called by the solver to send a value to the trace file
 void sca_user_solver_base::trace_from_user_solver(sca_core::sca_time tt,double value,int id)
 {
 	generic_solver->trace(tt,value,id);
 }
+*/
 
 void sca_user_solver_base::send_trace_to_file()
 {

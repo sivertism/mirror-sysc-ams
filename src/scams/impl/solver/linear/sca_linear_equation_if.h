@@ -27,7 +27,7 @@
   Created on: 06.11.2009
 
    SVN Version       :  $Revision: 1706 $
-   SVN last checkin  :  $Date: 2014-04-23 15:50:03 +0200 (Wed, 23 Apr 2014) $
+   SVN last checkin  :  $Date: 2014-04-23 13:50:03 +0000 (Wed, 23 Apr 2014) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_linear_equation_if.h 1706 2014-04-23 13:50:03Z karsten $
 

@@ -15,7 +15,8 @@ H_FILES = \
 	sca_time.h \
 	sca_max_time.h \
 	sca_set_default_solver_parameter.h \
-	sca_user_solver_base.h
+	sca_user_solver_base.h \
+	sca_physical_domain_interface.h
 
 NO_H_FILES = 
 

@@ -27,7 +27,7 @@
  Created on: 05.04.2012
 
  SVN Version       :  $Revision: 1917 $
- SVN last checkin  :  $Date: 2016-02-24 14:09:44 +0100 (Wed, 24 Feb 2016) $
+ SVN last checkin  :  $Date: 2016-02-24 13:09:44 +0000 (Wed, 24 Feb 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_max_time.cpp 1917 2016-02-24 13:09:44Z karsten $
 

@@ -36,7 +36,13 @@ H_FILES = \
 	sca_eln_transmission_line.h \
 	sca_eln_vccs.h \
 	sca_eln_vcvs.h \
-	sca_eln_vsource.h
+	sca_eln_vsource.h \
+	sca_eln_vcr.h \
+	sca_eln_vcc.h \
+	sca_eln_vcl.h \
+	sca_eln_ccr.h \
+	sca_eln_ccc.h \
+	sca_eln_ccl.h
 
 NO_H_FILES = 
 

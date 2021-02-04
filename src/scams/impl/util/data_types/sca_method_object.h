@@ -27,7 +27,7 @@
   Created on: 06.11.2009
 
    SVN Version       :  $Revision: 1376 $
-   SVN last checkin  :  $Date: 2012-08-09 10:28:06 +0200 (Thu, 09 Aug 2012) $
+   SVN last checkin  :  $Date: 2012-08-09 08:28:06 +0000 (Thu, 09 Aug 2012) $
    SVN checkin by    :  $Author: reuther $
    SVN Id            :  $Id: sca_method_object.h 1376 2012-08-09 08:28:06Z reuther $
 

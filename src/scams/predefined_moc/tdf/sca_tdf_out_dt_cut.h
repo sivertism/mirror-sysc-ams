@@ -28,10 +28,10 @@
 
  Created on: 14.11.2011
 
- SVN Version       :  $Revision: 1980 $
- SVN last checkin  :  $Date: 2016-04-01 14:41:01 +0200 (Fri, 01 Apr 2016) $ (UTC)
+ SVN Version       :  $Revision: 2063 $
+ SVN last checkin  :  $Date: 2018-06-19 16:14:06 +0000 (Tue, 19 Jun 2018) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_out_dt_cut.h 1980 2016-04-01 12:41:01Z karsten $
+ SVN Id            :  $Id: sca_tdf_out_dt_cut.h 2063 2018-06-19 16:14:06Z karsten $
 
  *****************************************************************************/
 /*
@@ -192,7 +192,7 @@ const T& sca_out<T,SCA_DT_CUT>::get_typed_trace_value() const
 
 	if(scasig==NULL)
 	{
-		static const T dummy;
+		static const T dummy=T();
 		return dummy;
 	}
 
@@ -491,40 +491,47 @@ const char* sca_out<T,SCA_DT_CUT>::kind() const
 
 
 
-
+//this method is called by the connected cluster
 template<class T>
 inline void sca_out<T,SCA_DT_CUT>::port_processing_method()
 {
+	//time reached by connected cluster -> the current call time
 	sca_core::sca_time time=this->get_declustered_time();
 
-	if(time >= next_time_reached)
+	//next time of the port cluster
+	if(time >= next_time_reached) //if the current time is smaller or equal , we must synchronize
 	{
-		next_time_reached=this->get_parent_module_time()+this->sca_core::sca_implementation::sca_port_base::get_parent_module()->get_timestep();
+		//re-calculate time reached by the port-module -> if this becomes larger, the write method
+		//was not called during module processing (otherwise the method should have set next_time_reached correctly)
+		if(this->sca_core::sca_implementation::sca_port_base::get_parent_module()->get_call_counter()>0)
+		{   //first call time is zero -> we get wrong next_time_reac result
+			next_time_reached=this->get_parent_module_time()+this->sca_core::sca_implementation::sca_port_base::get_parent_module()->get_timestep();
+		}
 		if(time<next_time_reached)
 		{
 			std::ostringstream str;
-			str << " Write not called for decoupling outport: " << this->name();
+			str << " Write not called for decoupling outport in processing: " << this->name();
 			SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
 		}
-		else
+		else //synchronize port-cluster
 		{
 			wait_for_sync_event=true;
 
 			//time out for the case, that write is not called
 			sc_core::wait(time-next_time_reached+sc_core::sc_get_time_resolution(),sync_event);
 
-			if(wait_for_sync_event)
+			if(wait_for_sync_event) //synchronization was not successful
 			{
 				sca_tdf::sca_module* mod=dynamic_cast<sca_tdf::sca_module*>(this->sca_core::sca_implementation::sca_port_base::get_parent_module());
 
 				next_time_reached=this->get_parent_module_time()+mod->get_timestep();
-				if(time<next_time_reached)
+				if(time<next_time_reached) //the reason was, that write was not called -> we can continue
 				{
 					std::ostringstream str;
-					str << " Write not called for decoupling outport: " << this->name();
+					str << " Write not called for decoupling outport in processing: " << this->name();
 					SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
 				}
-				else
+				else //something seems to be non-deterministic
 				{
 					std::ostringstream str;
 					str << "Synchronization between clusters cut by the port: ";
@@ -565,7 +572,7 @@ inline void sca_out<T,SCA_DT_CUT>::write(const T& value, unsigned long sample_id
 		  ))
 	{
 		 std::ostringstream str;
-		 str << "can't execute get_ct_delay() "
+		 str << "can't execute write() "
 				 "outside the context of the callback, "
 				 "processing "
 				 "of the current module ";

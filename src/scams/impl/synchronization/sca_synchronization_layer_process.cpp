@@ -28,10 +28,10 @@
 
  Created on: 26.08.2009
 
- SVN Version       :  $Revision: 1947 $
- SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $
+ SVN Version       :  $Revision: 2065 $
+ SVN last checkin  :  $Date: 2018-06-25 13:54:10 +0000 (Mon, 25 Jun 2018) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_synchronization_layer_process.cpp 1947 2016-03-13 20:11:21Z karsten $
+ SVN Id            :  $Id: sca_synchronization_layer_process.cpp 2065 2018-06-25 13:54:10Z karsten $
 
  *****************************************************************************/
 
@@ -648,14 +648,18 @@ void sca_synchronization_layer_process::cluster_process()
 		//run processing methods
 		if (!all_traces_initialized)
 		{
-			all_traces_initialized = true;
+			if(!sca_ac_analysis::sca_ac_is_running())
+			{
 
-			std::vector<sca_util::sca_implementation::sca_trace_file_base*>* traces;
+				all_traces_initialized = true;
 
-			traces=sca_core::sca_implementation::sca_get_curr_simcontext()->get_trace_list();
+				std::vector<sca_util::sca_implementation::sca_trace_file_base*>* traces;
 
-			for_each(traces->begin(),traces->end(),
+				traces=sca_core::sca_implementation::sca_get_curr_simcontext()->get_trace_list();
+
+				for_each(traces->begin(),traces->end(),
 			              std::mem_fun(&sca_util::sca_implementation::sca_trace_file_base::initialize));
+			}
 		}
 
 
@@ -841,9 +845,6 @@ void sca_synchronization_layer_process::cluster_process()
 
 sca_synchronization_layer_process::~sca_synchronization_layer_process()
 {
-	for (sca_synchronization_alg::sca_cluster_objT::iterator it =
-			cluster->begin(); it != cluster->end(); it++)
-		(*it)->sync_if->terminate();
 }
 
 }

@@ -26,10 +26,10 @@
 
   Created on: 25.08.2009
 
-   SVN Version       :  $Revision: 1767 $
-   SVN last checkin  :  $Date: 2014-07-13 11:26:50 +0200 (Sun, 13 Jul 2014) $
+   SVN Version       :  $Revision: 2115 $
+   SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_synchronization_alg.h 1767 2014-07-13 09:26:50Z karsten $
+   SVN Id            :  $Id: sca_synchronization_alg.h 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -118,6 +118,7 @@ public:
 
     bool attribute_changes_allowed;
     bool accepts_attribute_changes;
+    sc_core::sc_object** current_context_ref;
 
     sca_sync_objT();
 
@@ -146,6 +147,7 @@ public:
 	sc_core::sc_object* schedule_obj;
   	sc_object_method    proc_method;
 
+  	sc_core::sc_object** current_context_ref;
 
   	unsigned long call;
 
@@ -170,7 +172,9 @@ public:
 	 inline void run()
 	 {
 	 	(*allow_processing_access)=true;
+	 	*this->current_context_ref=schedule_obj;
 	 	(schedule_obj->*(proc_method))();
+	 	*this->current_context_ref=NULL;
 	 	(*allow_processing_access)=false;
 	 	(*call_counter)++; //will be adjusted after re-scheduling to be able
 	 	                   //to detect first call of the cluster execution
@@ -372,6 +376,8 @@ public:
 
   void reschedule_cluster(unsigned long cluster_id);
 
+  sc_core::sc_object* get_current_context() { return current_context; }
+
  private:
 
   typedef std::vector<sca_synchronization_obj_if*> sca_sync_obj_listT;
@@ -392,6 +398,8 @@ public:
   sc_dt::uint64 schedule_list_length;
   sc_dt::uint64 scaled_time_lcm;
   bool scheduling_list_warning_printed;
+
+  sc_core::sc_object* current_context;
 
 
   void check_closed_graph();
@@ -449,7 +457,8 @@ sc_dt::uint64
                            sca_sync_objT*  current_obj );
   sca_sync_objT* move_obj_if_not_done(sca_synchronization_obj_if* sync_obj,
 										    sca_cluster_objT*    cluster,
-                                            long                 cluster_id );
+                                            long                 cluster_id,
+											std::vector<sca_sync_objT*>&);
 
 
    void analyse_timing();

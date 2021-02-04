@@ -27,7 +27,7 @@
  Created on: 10.04.2012
 
  SVN Version       :  $Revision: 1822 $
- SVN last checkin  :  $Date: 2015-05-01 22:26:44 +0200 (Fri, 01 May 2015) $ (UTC)
+ SVN last checkin  :  $Date: 2015-05-01 20:26:44 +0000 (Fri, 01 May 2015) $ (UTC)
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_tdf_out_base.h 1822 2015-05-01 20:26:44Z karsten $
 

@@ -27,7 +27,10 @@ H_FILES = \
 	sca_lsf_tdf_mux.h \
 	sca_lsf_tdf_sink.h \
 	sca_lsf_tdf_source.h \
-	sca_lsf_module.h
+	sca_lsf_module.h \
+	sca_lsf_lsf_gain.h \
+	sca_lsf_lsf_demux.h \
+	sca_lsf_lsf_mux.h
 
 NO_H_FILES = 
 

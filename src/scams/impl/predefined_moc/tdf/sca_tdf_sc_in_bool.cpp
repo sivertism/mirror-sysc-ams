@@ -28,10 +28,10 @@
 
  Created on: 10.04.2012
 
- SVN Version       :  $Revision: 1960 $
- SVN last checkin  :  $Date: 2016-03-21 16:43:40 +0100 (Mon, 21 Mar 2016) $ (UTC)
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_sc_in_bool.cpp 1960 2016-03-21 15:43:40Z karsten $
+ SVN Id            :  $Id: sca_tdf_sc_in_bool.cpp 2106 2020-02-26 15:58:39Z karsten $
 
 
  *****************************************************************************/
@@ -66,20 +66,79 @@ const sc_core::sc_interface* sca_in<bool>::get_interface() const
  */
 const bool& sca_in<bool>::get_typed_trace_value() const
 {
-	const sc_core::sc_interface* scif=this->get_interface();
-	const sc_core::sc_signal_inout_if<bool>* sc_sig=
-			dynamic_cast<const sc_core::sc_signal_inout_if<bool>*>(scif);
+	return 	val_handle.read();
+}
 
-	if(sc_sig==NULL)
+const std::string& sca_in<bool>::get_trace_value() const
+{
+	std::ostringstream str;
+	str << get_typed_trace_value();
+	current_trace_value_string=str.str();
+
+	return current_trace_value_string;
+}
+
+/**
+ * method for register a trace callback
+ */
+inline bool sca_in<bool>::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	this->callbacks.push_back(&func);
+	this->callback_registered=true;
+    return true;
+}
+
+/**
+ * method for removing a trace callback
+ */
+inline bool sca_in<bool>::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	for(std::vector<sca_util::sca_traceable_object::callback_functor_base*>::iterator
+			it=this->callbacks.begin();it!=this->callbacks.end();++it)
 	{
-		static const bool dummy(false);
-		return dummy;
+		if(*it == &func)
+		{
+			this->callbacks.erase(it);
+			if(this->callbacks.size()<=0) this->callback_registered=false;
+			return true;
+		}
 	}
 
-	return sc_sig->read();
+	return false;
 }
 
 
+/** method of interactive tracing interface, which forces a value
+ */
+inline void sca_in<bool>::force_typed_value(const bool& val)
+{
+	this->forced_value=val;
+	this->value_forced=true;
+}
+
+
+
+void sca_in<bool>::set_force_value(const std::string& stri)
+{
+	if(!sca_util::sca_implementation::convert_from_string(forced_value,stri))
+	{
+		std::ostringstream str;
+		str << "Cannot convert string: " << stri << " to port type of port: ";
+		str << this->name() << " in method force_value - use force_typed_value instead";
+		SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
+		return;
+	}
+
+	this->value_forced=true;
+}
+
+
+/** method of interactive tracing interface, which releases a forced value
+*/
+void sca_in<bool>::release_value()
+{
+	this->value_forced=false;
+}
 
 const sc_core::sc_event& sca_in<bool>::default_event() const
 {
@@ -179,6 +238,9 @@ void sca_in<bool>::construct()
 	allow_processing_access_flag=NULL;
 
 	traces_available=false;
+
+	this->callback_registered=false;
+	this->value_forced=false;
 }
 
 
@@ -205,7 +267,23 @@ void sca_in<bool>::end_of_port_elaboration()
 
 void sca_in<bool>::read_sc_signal()
 {
-	val_handle.write((*this)->read());
+	if(this->value_forced)
+	{
+		val_handle.write(this->forced_value);
+	}
+	else
+	{
+		val_handle.write((*this)->read());
+	}
+
+
+	if(this->callback_registered)
+	{
+		for(unsigned long i=0;i<this->callbacks.size();++i)
+		{
+			(*(this->callbacks[i]))();
+		}
+	}
 
 	if(traces_available)
 	{
@@ -598,12 +676,11 @@ bool sca_in<bool>::trace_init(sca_util::sca_implementation::sca_trace_object_dat
 	trace_data.push_back(&data);
 	data.set_type_info<bool>();
 
-
-    data.type="-";
-    data.unit="-";
-
     data.event_driven=true;
     data.dont_interpolate=true;
+
+    //initialize trace
+    read_sc_signal();
 
     return true;
 

@@ -27,7 +27,7 @@
  Created on: 22.10.2009
 
  SVN Version       :  $Revision: 1401 $
- SVN last checkin  :  $Date: 2012-11-20 14:38:10 +0100 (Tue, 20 Nov 2012) $
+ SVN last checkin  :  $Date: 2012-11-20 13:38:10 +0000 (Tue, 20 Nov 2012) $
  SVN checkin by    :  $Author: reuther $
  SVN Id            :  $Id: ma_typedef.h 1401 2012-11-20 13:38:10Z reuther $
 

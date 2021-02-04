@@ -26,10 +26,10 @@
 
   Created on: 13.11.2009
 
-   SVN Version       :  $Revision: 1265 $
-   SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+   SVN Version       :  $Revision: 2016 $
+   SVN last checkin  :  $Date: 2016-11-25 10:15:05 +0000 (Fri, 25 Nov 2016) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_trace_value_handler_base.h 1265 2011-11-19 20:43:31Z karsten $
+   SVN Id            :  $Id: sca_trace_value_handler_base.h 2016 2016-11-25 10:15:05Z karsten $
 
  *****************************************************************************/
 
@@ -59,6 +59,7 @@ class sca_trace_value_handler_base
     virtual void copy_value(sca_trace_value_handler_base& val_handle) = 0;
 
     virtual const sca_type_explorer_base& get_typed_value(void*& data)=0;
+    virtual const sca_type_explorer_base& get_type() const =0;
 
     sca_trace_value_handler_base();
     virtual ~sca_trace_value_handler_base();

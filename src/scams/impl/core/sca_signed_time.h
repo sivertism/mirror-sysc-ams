@@ -29,10 +29,10 @@
 
   Created on: 14.03.2013
 
-   SVN Version       :  $Revision: 1935 $
-   SVN last checkin  :  $Date: 2016-03-02 10:38:23 +0100 (Wed, 02 Mar 2016) $
-   SVN checkin by    :  $Author: arndt $
-   SVN Id            :  $Id: sca_signed_time.h 1935 2016-03-02 09:38:23Z arndt $
+   SVN Version       :  $Revision: 2133 $
+   SVN last checkin  :  $Date: 2020-03-27 14:06:08 +0000 (Fri, 27 Mar 2020) $
+   SVN checkin by    :  $Author: karsten $
+   SVN Id            :  $Id: sca_signed_time.h 2133 2020-03-27 14:06:08Z karsten $
 
  *****************************************************************************/
 
@@ -156,10 +156,12 @@ const sca_signed_time
 operator - ( const sc_core::sc_time& t1, const sca_signed_time& t2 )
 {
 #if defined(SYSTEMC_VERSION) & (SYSTEMC_VERSION > 20120701)
-    return sca_signed_time(sc_core::sc_time::from_value(t1.value() - t2.value()));
+	sca_signed_time tm(sc_core::sc_time::from_value(t1.value() - t2.value()));
 #else
-    return sca_signed_time(t1.value() - t2.value(),false);
+	sca_signed_time tm(t1.value() - t2.value(),false);
 #endif
+
+	return tm;
 }
 
 

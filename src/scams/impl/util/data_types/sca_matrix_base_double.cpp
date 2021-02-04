@@ -4,6 +4,9 @@
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
@@ -22,14 +25,14 @@
 
   sca_matrix_base.h - description
 
-  Original Author: Karsten Einwich Fraunhofer IIS/EAS Dresden
+  Original Author: Karsten Einwich COSEDA Technologies GmbH
 
   Created on: 09.10.2009
 
-   SVN Version       :  $Revision: 1920 $
-   SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+   SVN Version       :  $Revision: 2109 $
+   SVN last checkin  :  $Date: 2020-03-03 14:22:27 +0000 (Tue, 03 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_matrix_base_double.cpp 1920 2016-02-25 12:43:37Z karsten $
+   SVN Id            :  $Id: sca_matrix_base_double.cpp 2109 2020-03-03 14:22:27Z karsten $
 
  *****************************************************************************/
 
@@ -240,6 +243,72 @@ sca_matrix_base<double>::sca_matrix_base(const sca_matrix_base<double>& m) :
 }
 
 
+#if __cplusplus >= 201103L
+
+sca_matrix_base<double>::sca_matrix_base(const std::initializer_list<double>& lst) :
+										sca_matrix_base_typeless(lst.size())
+{
+	write_is_pending=false;
+	sparse_mode=false;
+
+	smatrix=NULL;
+
+	dummy=0.0;
+	resize(lst.size());
+
+	auto v=begin(matrix);
+	for(const auto& l : lst)
+	{
+	   *v++=l;
+	}
+
+}
+
+
+
+sca_matrix_base<double>::sca_matrix_base(const std::initializer_list<std::initializer_list<double> >& lst)
+{
+
+	write_is_pending=false;
+	sparse_mode=false;
+
+	smatrix=NULL;
+
+
+	dummy=0.0;
+	if(lst.size()>0)
+	{
+		resize(lst.size(),lst.begin()->size());
+	}
+
+
+
+	unsigned long i=0;
+	for(const auto& l : lst)
+	{
+		unsigned long j=0;
+		if(l.size()!=sizes[0])
+		{
+			SC_REPORT_ERROR("SystemC-AMS","Matrix initializer list with different number of colums");
+			return;
+		}
+
+		for(const auto& ity: l)
+		{
+			matrix[i+j*sizes[1]]=ity;
+			++j;
+		}
+
+
+		++i;
+	}
+}
+
+#endif
+
+
+
+
 sca_matrix_base<double>& sca_matrix_base<double>::operator= (const sca_matrix_base<double>& m)
 {
 	dim      = m.dim;
@@ -249,7 +318,8 @@ sca_matrix_base<double>& sca_matrix_base<double>::operator= (const sca_matrix_ba
     auto_dim = m.auto_dim;
     accessed = true;
     ignore_negative=m.ignore_negative;
-
+    auto_sizable=m.auto_sizable;
+    sparse_mode=m.sparse_mode;
 
     if(sparse_mode)
     {

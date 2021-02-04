@@ -26,10 +26,10 @@
 
  Created on: 22.10.2009
 
- SVN Version       :  $Revision: 1754 $
- SVN last checkin  :  $Date: 2014-05-26 11:18:44 +0200 (Mon, 26 May 2014) $
+ SVN Version       :  $Revision: 2101 $
+ SVN last checkin  :  $Date: 2020-02-21 12:16:08 +0000 (Fri, 21 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: ana_reinit.c 1754 2014-05-26 09:18:44Z karsten $
+ SVN Id            :  $Id: ana_reinit.c 2101 2020-02-21 12:16:08Z karsten $
 
  *****************************************************************************/
 
@@ -104,12 +104,16 @@ int ana_reinit_sparse (
 	/*printf("Reinitialization with %i and dt: %e\n",reinit,h);*/
 
 	if((reinit<2 || (*sdatap)==NULL) || size!=(*sdatap)->size)
+	{
 		return ana_init_sparse(sA, sB, h, sdatap, reinit);
+	}
 	else
 	{
 		/*if there was no timestep before -> we must reinit all */
-		if((*sdatap)->cur_algorithm==EULER)  
+		if((*sdatap)->cur_algorithm==EULER)
+		{
 			return ana_init_sparse(sA, sB, h, sdatap, 1);
+		}
 
 		sdata = *sdatap;
 	}
@@ -119,26 +123,31 @@ int ana_reinit_sparse (
 
 	hinv = 2.0/h;
 	sdata->h = h;
-	sdata->h_temp = h;
-	sdata->h_diff = 0.0;
-	sdata->variable_step_size = 0;
 
-	err = MA_GenerateProductValueSparse(sdata->sW_trapez, sA, hinv);
-	if (err)
-		return err;
-
-	err = MA_GenerateSumMatrixWeighted(sdata->sZ_trapez, 1.0, sdata->sW_trapez,
-			1.0, sB);
-	if (err)
-		return err;
-
-	err = MA_LequSparseCodegen(sdata->sZ_trapez, sdata->code_trapez);
-	if(err)
+	if((*sdatap)->algorithm==TRAPEZ)
 	{
-		sdata->critical_column=sdata->code_trapez->critical_column;
-		sdata->critical_row=sdata->code_trapez->critical_line;
-		return(err);
-	}
+
+		err = MA_GenerateProductValueSparse(sdata->sW_trapez, sA, hinv);
+		if (err)
+			return err;
+
+		err = MA_GenerateSumMatrixWeighted(sdata->sZ_trapez, 1.0, sdata->sW_trapez,1.0, sB);
+
+		if (err)
+		{
+			return err;
+		}
+
+		err = MA_LequSparseCodegen(sdata->sZ_trapez, sdata->code_trapez);
+
+		if(err)
+		{
+			sdata->critical_column=sdata->code_trapez->critical_column;
+			sdata->critical_row=sdata->code_trapez->critical_line;
+			return(err);
+		}
+
+	} /*if((*sdatap)->algorithm==TRAPEZ)*/
 
 	return err;
 }

@@ -26,10 +26,10 @@
 
  Created on: 14.05.2009
 
- SVN Version       :  $Revision: 1914 $
- SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+ SVN Version       :  $Revision: 2115 $
+ SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_object_manager.h 1914 2016-02-23 18:06:06Z karsten $
+ SVN Id            :  $Id: sca_object_manager.h 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -56,7 +56,8 @@ class sca_trace_file_base;
 
 namespace sc_core
 {
-  class sc_object_manager;
+class sc_object_manager;
+class sc_object;
 }
 
 namespace sca_core
@@ -110,6 +111,8 @@ public:
 
 	//destructor
 	~sca_object_manager();
+
+	sc_core::sc_object* get_current_context();
 
 	void set_default_solver_parameter(
 			std::string solver,
@@ -175,6 +178,11 @@ public:
 		return init_done;
 	}
 
+	bool is_object_deleted()
+	{
+		return object_deleted;
+	}
+
 private:
 
 	//reference to main object manager
@@ -194,6 +202,8 @@ private:
 	sca_synchronization_layer* synchronization;
 
 	bool init_done;
+
+	bool object_deleted;
 
 };
 

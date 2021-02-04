@@ -26,10 +26,10 @@
 
  Created on: 13.11.2009
 
- SVN Version       :  $Revision: 1265 $
- SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+ SVN Version       :  $Revision: 2018 $
+ SVN last checkin  :  $Date: 2016-11-25 17:37:05 +0000 (Fri, 25 Nov 2016) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_trace_value_handler.h 1265 2011-11-19 20:43:31Z karsten $
+ SVN Id            :  $Id: sca_trace_value_handler.h 2018 2016-11-25 17:37:05Z karsten $
 
  *****************************************************************************/
 
@@ -62,10 +62,13 @@ public:
 	virtual sca_trace_value_handler_base& hold(const sca_core::sca_time& ctime);
 
 	const sca_type_explorer_base& get_typed_value(void*& data);
+    const sca_type_explorer_base& get_type() const;
+
 
 	//default hold value
 	virtual sca_trace_value_handler_base& interpolate(const sca_core::sca_time& ctime);
 	virtual ~sca_trace_value_handler();
+
 
 };
 
@@ -73,14 +76,36 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
+
+template<class TV>
+inline void print_value(std::ostream& ostr,const TV& value)
+{
+	ostr << value;
+}
+
+template<>
+inline void print_value<sca_util::sca_complex>(std::ostream& ostr,
+		const sca_util::sca_complex& value)
+{
+	ostr << value.real() << " " <<  value.imag();
+}
+
+template<class T>
+inline const sca_type_explorer_base& sca_trace_value_handler<T>::get_type() const
+{
+	static const sca_type_explorer<T> type_info;
+	return type_info;
+}
+
+
 template<class T>
 inline const sca_type_explorer_base& sca_trace_value_handler<T>::get_typed_value(void*& data)
 {
 	data=static_cast<void*>(&value);
-
-	static const sca_type_explorer<T> type_info;
-	return type_info;
+	return this->get_type();
 }
+
+
 
 template<class T>
 inline sca_trace_value_handler<T>::sca_trace_value_handler(const T& val) :
@@ -134,10 +159,11 @@ inline sca_trace_value_handler<T>& sca_trace_value_handler<T>::operator =(
 
 ////////////////////////////////////
 
+
 template<class T>
 inline void sca_trace_value_handler<T>::print(std::ostream& ostr)
 {
-	ostr << value;
+	print_value<T>(ostr,value);
 }
 
 ////////////////////////////////////

@@ -28,10 +28,10 @@
 
  Created on: 03.03.2009
 
- SVN Version       :  $Revision: 1947 $
- SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $ (UTC)
+ SVN Version       :  $Revision: 2115 $
+ SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_module.h 1947 2016-03-13 20:11:21Z karsten $
+ SVN Id            :  $Id: sca_module.h 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -213,6 +213,12 @@ private:
 	void request_first_activation(const sc_core::sc_event_and_list& evlist);
 
 public:
+
+	/**
+	 * gets unique id for the current computation cluster
+	 * if the module is not (yet) associated to a cluster -1 is returned
+	 */
+	long get_cluster_id();
 
 	/** Returns reference flag for allowing access to ports for processing phase
 		 */

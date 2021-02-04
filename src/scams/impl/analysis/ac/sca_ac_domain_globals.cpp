@@ -26,10 +26,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1265 $
-   SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+   SVN Version       :  $Revision: 2045 $
+   SVN last checkin  :  $Date: 2017-09-19 14:05:56 +0000 (Tue, 19 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_domain_globals.cpp 1265 2011-11-19 20:43:31Z karsten $
+   SVN Id            :  $Id: sca_ac_domain_globals.cpp 2045 2017-09-19 14:05:56Z karsten $
 
  *****************************************************************************/
 
@@ -80,6 +80,8 @@ void sca_ac_domain_register_entity(sc_core::sc_module*           mod,
 
     get_ac_database().register_entity(entity);
 }
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 

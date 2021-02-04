@@ -3,6 +3,9 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1910 $
-   SVN last checkin  :  $Date: 2016-02-16 13:44:37 +0100 (Tue, 16 Feb 2016) $
+   SVN Version       :  $Revision: 2106 $
+   SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_nullor.cpp 1910 2016-02-16 12:44:37Z karsten $
+   SVN Id            :  $Id: sca_eln_nullor.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 
@@ -45,10 +48,6 @@ namespace sca_eln
 sca_nullor::sca_nullor(sc_core::sc_module_name) :
 	nip("nip"), nin("nin"), nop("nop"), non("non")
 {
-	through_value_available = false;
-	through_value_type = "I";
-	through_value_unit = "A";
-
 	nadd=-1;
 }
 

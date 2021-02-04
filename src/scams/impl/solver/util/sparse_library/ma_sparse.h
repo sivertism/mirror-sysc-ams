@@ -27,7 +27,7 @@
  Created on: 22.10.2009
 
  SVN Version       :  $Revision: 1418 $
- SVN last checkin  :  $Date: 2012-12-04 15:22:36 +0100 (Tue, 04 Dec 2012) $
+ SVN last checkin  :  $Date: 2012-12-04 14:22:36 +0000 (Tue, 04 Dec 2012) $
  SVN checkin by    :  $Author: reuther $
  SVN Id            :  $Id: ma_sparse.h 1418 2012-12-04 14:22:36Z reuther $
 

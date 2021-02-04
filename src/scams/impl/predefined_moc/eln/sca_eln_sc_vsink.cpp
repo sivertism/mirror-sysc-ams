@@ -3,6 +3,9 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1665 $
-   SVN last checkin  :  $Date: 2013-12-23 23:12:50 +0100 (Mon, 23 Dec 2013) $
+   SVN Version       :  $Revision: 2112 $
+   SVN last checkin  :  $Date: 2020-03-12 13:06:46 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_sc_vsink.cpp 1665 2013-12-23 22:12:50Z karsten $
+   SVN Id            :  $Id: sca_eln_sc_vsink.cpp 2112 2020-03-12 13:06:46Z karsten $
 
  *****************************************************************************/
 
@@ -71,6 +74,9 @@ sca_vsink::sca_vsink(sc_core::sc_module_name, double scale_) :
     //IMPROVE: find better solution -> inserts additional port in database
     conv_port=new ::sca_tdf::sca_de::sca_out<double>("converter_port");
     conv_port->bind(outp);
+
+	unit="A";
+	domain="I";
 }
 
 
@@ -83,7 +89,8 @@ void sca_vsink::assign_result()
     }
     else
     {
-        sca_ac_analysis::sca_implementation::sca_ac(outp) = scale * x(p);
+    	//do nothing ac for sc signals does not exist
+        //sca_ac_analysis::sca_implementation::sca_ac(outp) = scale * x(p);
     }
 
 }
@@ -95,13 +102,9 @@ void sca_vsink::matrix_stamps()
 
 bool sca_vsink::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type=through_value_type;
-    data.unit=through_value_unit;
-
     //trace will be activated after every complete cluster calculation
     //by teh synchronization layer
-    get_sync_domain()->add_solver_trace(data);
-    return true;
+    return get_sync_domain()->add_solver_trace(data);
 }
 void sca_vsink::trace(long id,sca_util::sca_implementation::sca_trace_buffer& buffer)
 {
@@ -116,6 +119,38 @@ sca_util::sca_complex sca_vsink::calculate_ac_result(sca_util::sca_complex* res_
 	return sca_util::sca_complex(0.0,0.0);
 }
 
+/**
+   * experimental physical domain interface
+*/
+void sca_vsink::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_vsink::get_unit() const
+{
+	return unit;
+}
+
+void sca_vsink::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_vsink::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_vsink::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_vsink::get_domain() const
+{
+	return domain;
+}
 
 
 } //namespace sca_de

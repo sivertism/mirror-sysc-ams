@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 04.03.2009
 
- SVN Version       :  $Revision: 1960 $
- SVN last checkin  :  $Date: 2016-03-21 16:43:40 +0100 (Mon, 21 Mar 2016) $ (UTC)
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_sc_in_sc_logic.h 1960 2016-03-21 15:43:40Z karsten $
+ SVN Id            :  $Id: sca_tdf_sc_in_sc_logic.h 2106 2020-02-26 15:58:39Z karsten $
 
 
  *****************************************************************************/
@@ -124,6 +124,25 @@ public:
 	 */
 	const sc_dt::sc_logic& get_typed_trace_value() const;
 
+	virtual const std::string& get_trace_value() const;
+
+
+    /**
+     * registers trace callback
+     */
+	virtual bool register_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+	virtual bool remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+
+	/** method of interactive tracing interface, which forces a value
+	 */
+    void force_typed_value(const sc_dt::sc_logic&);
+    virtual void set_force_value(const std::string& stri);
+
+
+    /** method of interactive tracing interface, which releases a forced value
+    */
+    virtual void release_value();
+
 
 	void set_timeoffset(const sca_core::sca_time& toffset); //obsolete in 2.0
 	void set_timeoffset(double toffset, ::sc_core::sc_time_unit unit); //obsolete in 2.0
@@ -182,6 +201,15 @@ private:
 
 	//method to pass attributes to module after change attributes
 	void validate_port_attributes();
+
+	//variables for interactive trace callback
+	std::vector<sca_util::sca_traceable_object::callback_functor_base*> callbacks;
+	bool callback_registered;
+
+	sc_dt::sc_logic forced_value;
+	bool value_forced;
+
+	mutable std::string current_trace_value_string;
 
 
 	//end implementation specific

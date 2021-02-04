@@ -29,7 +29,7 @@
  Created on: 05.03.2009
 
  SVN Version       :  $Revision: 1973 $
- SVN last checkin  :  $Date: 2016-03-24 16:46:07 +0100 (Thu, 24 Mar 2016) $
+ SVN last checkin  :  $Date: 2016-03-24 15:46:07 +0000 (Thu, 24 Mar 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_lsf_out.h 1973 2016-03-24 15:46:07Z karsten $
 

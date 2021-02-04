@@ -5,7 +5,9 @@ include $(top_srcdir)/config/Make-rules
 H_FILES = \
 	sca_ac_functions.h \
 	sca_ac_noise_start.h \
-	sca_ac_start.h
+	sca_ac_start.h \
+	sca_ac_object.h \
+	sca_ac_module.h
 
 NO_H_FILES = 
 

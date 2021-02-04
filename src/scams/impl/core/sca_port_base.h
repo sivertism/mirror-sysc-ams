@@ -3,6 +3,8 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+	Copyright 2015-2017
+	COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +28,10 @@
 
   Created on: 15.05.2009
 
-   SVN Version       :  $Revision: 1586 $
-   SVN last checkin  :  $Date: 2013-05-26 21:58:36 +0200 (Sun, 26 May 2013) $
+   SVN Version       :  $Revision: 2039 $
+   SVN last checkin  :  $Date: 2017-03-06 14:42:55 +0000 (Mon, 06 Mar 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_port_base.h 1586 2013-05-26 19:58:36Z karsten $
+   SVN Id            :  $Id: sca_port_base.h 2039 2017-03-06 14:42:55Z karsten $
 
  *****************************************************************************/
 
@@ -74,6 +76,12 @@ public:
   //constructors
   sca_port_base();
   sca_port_base(const char* nm);
+
+  /**
+   * adds a trace to the cluster in which the port is instantiated
+   * so the specified trace will be executed with the cluster data
+   */
+  bool add_cluster_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj);
 
   /**
   	Returns a pointer to the first bound interface -
@@ -141,6 +149,19 @@ public:
    bool elaboration_finished;
 
    virtual void validate_port_attributes() { return;}
+
+
+	/** adds callback for introspection */
+	virtual bool register_trace_callback(sca_trace_callback,void*);
+	virtual bool register_trace_callback(callback_functor_base&);
+	virtual bool remove_trace_callback(callback_functor_base&);
+
+	/** returns current value */
+	virtual const std::string& get_trace_value() const;
+
+	virtual bool force_value(const std::string&);
+
+	virtual void release_value();
 
 protected:
 

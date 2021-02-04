@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2017
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1946 $
-   SVN last checkin  :  $Date: 2016-03-11 18:03:11 +0100 (Fri, 11 Mar 2016) $
+   SVN Version       :  $Revision: 2133 $
+   SVN last checkin  :  $Date: 2020-03-27 14:06:08 +0000 (Fri, 27 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_domain_solver.cpp 1946 2016-03-11 17:03:11Z karsten $
+   SVN Id            :  $Id: sca_ac_domain_solver.cpp 2133 2020-03-27 14:06:08Z karsten $
 
  *****************************************************************************/
 
@@ -42,6 +42,12 @@
 #include "scams/impl/analysis/ac/sca_ac_domain_db.h"
 #include "scams/impl/core/sca_simcontext.h"
 #include "scams/impl/solver/util/sparse_library/sca_solve_ac_linear.h"
+
+#include "scams/predefined_moc/eln/sca_eln_module.h"
+#include "scams/predefined_moc/lsf/sca_lsf_module.h"
+#include "scams/impl/core/sca_solver_base.h"
+#include "scams/impl/solver/linear/sca_linear_solver.h"
+#include "scams/impl/analysis/ac/sca_ac_domain_globals.h"
 
 
 namespace sca_ac_analysis
@@ -96,12 +102,19 @@ int solve_linear_complex_eq_system::solve(sca_util::sca_matrix<sca_util::sca_com
     //solving the real equation system
     errc=sca_solve_ac_linear(b.get_flat(), sigs.get_flat(),&sdata);
 
-    if(errc!=0)
-    {
-    	sca_solve_ac_linear_free(&sdata);
-        return 3;
-    }
+    //an error at this stage means the result is may inaccurate
+	if(errc==5)
+	{
+		long row=-1, column=-1;
+		sca_solve_ac_get_error_position(sdata,&row,&column);
 
+		//if error in imaginary part -> normalize
+		if(row>=long(dimb))    row-=dimb;
+		if(column>=long(dimb)) column-=dimb;
+
+		critical_row=row;
+		critical_column=column;
+	}
 
 
     //converting result to complex
@@ -127,16 +140,27 @@ sca_ac_domain_solver::sca_ac_domain_solver(sca_ac_domain_db& ac_db,bool noise_do
     ac_data.noise_domain = noise_domain;
     ac_data.initialized  = false;
 
+
     if(!(sca_core::sca_implementation::sca_get_curr_simcontext()->initialized()))
     {
-        init_systemc();
+        this->init_systemc();
     }
+
+   //disable time domain simulation -> prevent wait and thus time progress,
+   //which may happens during equation setup due e.g. converter port access
+   sca_core::sca_implementation::sca_get_curr_simcontext()->set_no_time_domain_simulation();
+
+
+    this->ac_elaborate();
 
     equations.initialize_equation_system();
 
     ac_data.ac_domain    = false;
 
     ac_data.initialized=true;
+
+    sca_core::sca_implementation::sca_get_curr_simcontext()->set_time_domain_simulation();
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -160,14 +184,21 @@ void sca_ac_domain_solver::solve_complex_eq_system(
             str << " Creation of sparse matrix failed (can't allocate memory) for frequency: "
             << sca_ac_analysis::sca_ac_f() << " Hz"<< std::endl;
         }
-        else if(err==2)
+        else if((err==2) || (err==5))
         {
         	//currently only for signals and nodes
         	sc_core::sc_object* row_obj=this->ac_data.find_object_for_id(solver.critical_row);
         	sc_core::sc_object* col_obj=this->ac_data.find_object_for_id(solver.critical_column);
 
-            str << " Creation of SparseCode failed for frequency: "
-            << sca_ac_analysis::sca_ac_f() << " Hz"<< std::endl;
+        	if(err==2)
+        	{
+        		str << " Creation of SparseCode failed for frequency: ";
+        	}
+        	else
+        	{
+        		str << " Equation solver has accuracy problems for frequency: ";
+        	}
+            str << sca_ac_analysis::sca_ac_f() << " Hz"<< std::endl;
 
             if((row_obj!=NULL) || (col_obj!=NULL))
             {
@@ -498,7 +529,7 @@ void sca_ac_domain_solver::trace_noise(double w, sca_util::sca_matrix<sca_util::
 
         sc_core::sc_interface* sca_if;
 
-        long npoint=0;
+        long npoint=-1;
         for(std::vector<sca_util::sca_implementation::sca_trace_object_data>::iterator
                 tr_objit =  (*tr_it)->
                             traces.begin();
@@ -510,6 +541,8 @@ void sca_ac_domain_solver::trace_noise(double w, sca_util::sca_matrix<sca_util::
 
             if(tobj)
             {
+            	npoint++;
+
                 sc_core::sc_port_base* port = dynamic_cast<sc_core::sc_port_base*>(tobj);
                 if(port)
                     sca_if  = dynamic_cast<sc_core::sc_interface*>(port->get_interface());
@@ -558,7 +591,6 @@ void sca_ac_domain_solver::trace_noise(double w, sca_util::sca_matrix<sca_util::
                     }
 
                 }
-                npoint++;
             }
         }
         (*tr_it)->write_ac_noise_domain_stamp(w,tr_matrix);
@@ -584,7 +616,7 @@ void sca_ac_domain_solver::trace(double w, sca_util::sca_vector<sca_util::sca_co
         if((*tr_it)->trace_disabled())
             continue;
         std::vector<sca_util::sca_complex > tr_vec;
-        sc_core::sc_interface* sca_if;
+        const sc_core::sc_interface* sca_if(NULL);
 
         for(std::vector<sca_util::sca_implementation::sca_trace_object_data>::iterator
                 tr_objit =  (*tr_it)->
@@ -602,6 +634,16 @@ void sca_ac_domain_solver::trace(double w, sca_util::sca_vector<sca_util::sca_co
                     sca_if  = dynamic_cast<sc_core::sc_interface*>(port->get_interface());
                 else
                     sca_if  = dynamic_cast<sc_core::sc_interface*>(tobj);
+
+                if(sca_if==NULL)
+                {
+                	sca_util::sca_implementation::sca_sc_trace_base* sct;
+                	sct=dynamic_cast<sca_util::sca_implementation::sca_sc_trace_base*>(tobj);
+                	if(sct)
+                	{
+                		sca_if=sct->get_sc_interface();
+                	}
+                }
 
                 if(sca_if)
                 {
@@ -651,43 +693,178 @@ void sca_ac_domain_solver::trace(double w, sca_util::sca_vector<sca_util::sca_co
 
 void sca_ac_domain_solver::init_systemc()
 {
-
-    std::vector<sca_util::sca_implementation::sca_trace_file_base*>* tr_list=
-    	sca_core::sca_implementation::sca_get_curr_simcontext()->get_trace_list();
-
-    std::vector<bool> en_list(tr_list->size());
-    std::vector<bool>::iterator enit=en_list.begin();
-
-    for(std::vector<sca_util::sca_implementation::sca_trace_file_base*>::iterator
-    		tr_it  = tr_list->begin();
-            tr_it != tr_list->end();
-            ++tr_it, ++enit )
-    {
-        if((*tr_it)->trace_disabled())
-        {
-            (*enit)=false;
-        }
-        else
-        {
-            (*tr_it)->disable();
-            (*enit)=true;
-        }
-    }
+    sc_core::sc_start(sc_core::SC_ZERO_TIME); //Unfortunately all initial deltas will be performed - also
+}
 
 
-    sc_core::sc_start(sc_core::SC_ZERO_TIME); //unfourtunately all initial deltas will be performed - also
-    //the first call of the df-cluster
 
-    enit=en_list.begin();
-    for(std::vector<sca_util::sca_implementation::sca_trace_file_base*>
-            ::iterator tr_it  = tr_list->begin();
-            tr_it != tr_list->end();
-            ++tr_it, ++enit )
-    {
-        if(*enit)
-            (*tr_it)->enable_not_init();
-    }
 
+//disables all eln/lsf solver which have modules below in hierarchy of obj
+void sca_ac_domain_solver::hierarchic_disable_eln_lsf_solver(sc_core::sc_object* obj)
+{
+	std::vector<sc_core::sc_object*> chobjs;
+	chobjs=obj->get_child_objects();
+
+	//go recursivily through hierarchy
+	for(std::size_t i=0;i<chobjs.size();++i)
+	{
+		sca_eln::sca_module* elnm=dynamic_cast<sca_eln::sca_module*>(chobjs[i]);
+		if(elnm!=NULL)
+		{
+			elnm->get_sync_domain()->ac_disable();
+			continue;
+		}
+
+		sca_lsf::sca_module* lsfm=dynamic_cast<sca_lsf::sca_module*>(chobjs[i]);
+		if(elnm!=NULL)
+		{
+			lsfm->get_sync_domain()->ac_disable();
+			continue;
+		}
+
+		this->hierarchic_disable_eln_lsf_solver(chobjs[i]);
+	}
+}
+
+
+
+void sca_ac_domain_solver::register_ac_entities(sc_core::sc_object* obj)
+{
+	if(obj==NULL)
+	{
+		SC_REPORT_ERROR("sca_ac_domain_solver","Internal not possible error");
+		return;
+	}
+
+	sca_ac_analysis::sca_ac_object* ac_obj;
+	ac_obj=dynamic_cast<sca_ac_analysis::sca_ac_object*>(obj);
+
+	if((ac_obj!=NULL) && (ac_obj->is_ac_enabled()))
+	{
+		sca_core::sca_implementation::sca_solver_base* solv;
+		solv=dynamic_cast<sca_core::sca_implementation::sca_solver_base*>(ac_obj);
+
+		if(solv!=NULL) //linear solver registration -> eventually generalize to solver base
+		{
+			//register only for registration due it will be may be disabled
+			to_reg_ac_solver.push_back(solv);
+
+			//a solver object has no hierarchy so we can stop here
+			return;
+		}
+
+		sca_ac_analysis::sca_ac_module* ac_mod;
+		ac_mod=dynamic_cast<sca_ac_analysis::sca_ac_module*>(ac_obj);
+		if(ac_mod!=NULL)
+		{
+
+			sca_ac_analysis::sca_implementation::sca_ac_domain_register_entity(
+		        dynamic_cast<sc_core::sc_module*>(obj),
+		        static_cast<sca_ac_analysis::sca_implementation::sca_ac_domain_method>
+					(&sca_ac_module::ac_processing));
+
+			//register arcs for non sca modules
+
+			if(dynamic_cast<sca_core::sca_module*>(obj)==NULL)
+			{
+				std::vector<sc_core::sc_object*> chobjs;
+				chobjs=obj->get_child_objects();
+
+				for(std::size_t i=0;i<chobjs.size();++i)
+				{
+					sc_core::sc_port_base* pb=dynamic_cast<sc_core::sc_port_base*>(chobjs[i]);
+
+					if(pb!=NULL)
+					{
+
+						if(dynamic_cast<sca_eln::sca_terminal*>(pb))
+						{
+							std::ostringstream str;
+							str << "The ac module: " << obj->name() << " has the sca_eln::sca_terminal: ";
+							str << pb->name() << " - electrical terminals are not supported for ac modules";
+							SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+						}
+
+						if(dynamic_cast<sca_lsf::sca_signal*>(pb))
+						{
+							std::ostringstream str;
+							str << "The ac module: " << obj->name() << " has the sca_lsf::sca_signal: ";
+							str << pb->name() << " - linear signal flow signals are not supported for ac modules";
+							SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+						}
+
+
+						sc_core::sc_interface* scif=pb->get_interface();
+						if(scif!=NULL)
+						{
+							sca_ac_register_arc(scif);
+						}
+					}
+				}
+			}
+		}
+
+	  //ac-module found go no deeper in hierarchy
+
+	  //however disable all eln and lsf solver
+	  this->hierarchic_disable_eln_lsf_solver(obj);
+
+	  return;
+	}
+
+
+	std::vector<sc_core::sc_object*> chobjs;
+	chobjs=obj->get_child_objects();
+
+	//go recursivily through hierarchy
+	for(std::size_t i=0;i<chobjs.size();++i)
+	{
+		this->register_ac_entities(chobjs[i]);
+	}
+
+}
+
+
+
+void sca_ac_domain_solver::ac_elaborate()
+{
+	if(get_ac_database().is_elaborated()) return;
+
+	std::vector<sc_core::sc_object*> top_objects;
+
+	top_objects=sc_core::sc_get_top_level_objects();
+
+	for(std::size_t i=0;i<top_objects.size();++i)
+	{
+		this->register_ac_entities(top_objects[i]);
+	}
+
+
+	//register active solver
+	for(std::size_t i=0;i<to_reg_ac_solver.size();++i)
+	{
+		sca_core::sca_implementation::sca_solver_base* solv=to_reg_ac_solver[i];
+
+		if(solv->is_ac_enabled())
+		{
+			//can be generalized for sca_solver_base
+			sca_core::sca_implementation::sca_linear_solver* lsolv;
+			lsolv=dynamic_cast<sca_core::sca_implementation::sca_linear_solver*>(solv);
+
+			if(lsolv!=NULL)
+			{
+				  sca_ac_analysis::sca_implementation::sca_ac_domain_register_entity(
+				     lsolv,
+					 NULL,
+					 static_cast<sca_ac_analysis::sca_implementation::sca_add_ac_domain_eq_method> (&sca_core::sca_implementation::sca_linear_solver::ac_domain_eq_method),
+					 static_cast<sca_ac_analysis::sca_implementation::sca_calc_add_eq_cons_method> (&sca_core::sca_implementation::sca_linear_solver::ac_add_eq_cons_method));
+			}
+		}
+	}
+
+	to_reg_ac_solver.clear();
+
+	sca_ac_analysis::sca_implementation::get_ac_database().set_elaborated();
 }
 
 /////////////////////////////////////////////////////////////////////////////

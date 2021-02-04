@@ -27,7 +27,7 @@
   Created on: Jan 19, 2010
 
    SVN Version       :  $Revision: 1988 $
-   SVN last checkin  :  $Date: 2016-04-05 10:10:19 +0200 (Tue, 05 Apr 2016) $
+   SVN last checkin  :  $Date: 2016-04-05 08:10:19 +0000 (Tue, 05 Apr 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_implementation_info.cpp 1988 2016-04-05 08:10:19Z karsten $
 

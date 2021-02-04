@@ -26,10 +26,10 @@
 
  Created on: 13.05.2009
 
- SVN Version       :  $Revision: 1984 $
- SVN last checkin  :  $Date: 2016-04-04 13:10:24 +0200 (Mon, 04 Apr 2016) $
+ SVN Version       :  $Revision: 2132 $
+ SVN last checkin  :  $Date: 2020-03-27 13:40:11 +0000 (Fri, 27 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_simcontext.cpp 1984 2016-04-04 11:10:24Z karsten $
+ SVN Id            :  $Id: sca_simcontext.cpp 2132 2020-03-27 13:40:11Z karsten $
 
  *****************************************************************************/
 
@@ -60,6 +60,10 @@
 #define PACKAGE_VERSION "????"
 #endif
 
+#ifndef REVISION
+#define REVISION "$Revision: 2132 $"
+#endif
+
 #define SCA_RELEASE_DATE    SCA_VERSION_RELEASE_DATE
 
 using namespace sca_core;
@@ -87,6 +91,7 @@ const sca_core::sca_time& NOT_VALID_SCA_TIME()
 
 // Not MT-safe!
 static sca_simcontext* sca_curr_simcontext = 0;
+static bool            sca_simulation_finished=false;
 
 class systemc_ams_initializer : sc_core::sc_module
 {
@@ -135,12 +140,19 @@ void systemc_ams_initializer::end_of_simulation()
 
 		for(unsigned int i=0;i<solvers.size();i++)
 		{
-			solvers[i]->print_post_solve_statisitcs();
+			if(solvers[i]!=NULL)
+			{
+				sca_synchronization_obj_if* sif;
+				sif=dynamic_cast<sca_synchronization_obj_if*>(solvers[i]);
+
+				if(sif!=NULL)
+				{
+					sif->terminate();
+				}
+
+				solvers[i]->print_post_solve_statisitcs();
+			}
 		}
-
-
-		delete sca_curr_simcontext;
-		sca_curr_simcontext=NULL;
 	}
 }
 
@@ -149,7 +161,7 @@ sca_simcontext* sca_get_curr_simcontext()
 	if (sca_curr_simcontext == 0)
 	{
 		//after simulation start the simcontext cannot created anymore
-		if(sc_core::sc_end_of_simulation_invoked())
+		if(sc_core::sc_end_of_simulation_invoked()||sca_simulation_finished)
 		{
 			return NULL;
 		}
@@ -160,6 +172,15 @@ sca_simcontext* sca_get_curr_simcontext()
 #else
 		sca_curr_simcontext = new sca_simcontext;
 #endif
+	}
+
+	/**
+	 * if the SystemC simcontext was re-created -> recreate SystemC-AMS simcontext also
+	 */
+	if(sc_core::sc_get_curr_simcontext()!=sca_curr_simcontext->get_sc_simcontext())
+	{
+		delete sca_curr_simcontext;
+		sca_curr_simcontext = new sca_simcontext;
 	}
 
 	return sca_curr_simcontext;
@@ -211,12 +232,12 @@ void sca_simcontext::sca_pln()
 		std::string::size_type br;
 		while ((br = revision.find("$")) != std::string::npos)
 			revision.erase(br, 1);
-		while ((br = revision.find("Rev:")) != std::string::npos)
-			revision = revision.substr(br + 4);
+		while ((br = revision.find("Revision:")) != std::string::npos)
+			revision = revision.substr(br + sizeof("Revision:"));
 
 		std::cerr << std::endl << std::endl;
 		std::cerr << "        SystemC AMS extensions " << sca_core::sca_release()
-				<< " Release date: " << SCA_RELEASE_DATE << std::endl;
+				<< " Release date: " << SCA_RELEASE_DATE  << " " << revision << std::endl;
 
 		std::cerr << sca_copyright_string << std::endl << std::endl << std::endl;
 
@@ -303,14 +324,20 @@ void sca_simcontext::initialize_all_traces()
 
 sca_simcontext::~sca_simcontext()
 {
-	delete m_sca_object_manager;
+
+	if(m_sca_object_manager!=NULL) 
+	{
+		delete m_sca_object_manager;
+		m_sca_object_manager=NULL;
+	}
 	//delete scams_init; //we cant destroy a module
 	                     //addtionally the end_of_simulation callback
 	                     //of this modules calls the sca_simcontext
 	                     //destructor
 
-	m_sca_object_manager=NULL;
+	
 	sca_curr_simcontext = NULL; //will not work ifdef PURIFY
+	sca_simulation_finished=true;
 }
 
 //////////////////////////////////////////////////////////////////
@@ -328,6 +355,33 @@ sca_module* sca_simcontext::get_current_sca_module()
 	//if module==NULL current module no sca_module
 	return module;
 }
+
+
+sc_core::sc_object* sca_simcontext::get_current_context()
+{
+	return m_sca_object_manager==NULL?NULL:m_sca_object_manager->get_current_context();
+}
+
+
+/**
+ * returns the cluster id of the current context (see above)
+ * if no context active or not yet clustered -1 is returned
+ */
+long sca_simcontext::get_current_context_cluster_id()
+{
+	sc_core::sc_object* obj=get_current_context();
+	if(obj==NULL) return -1;
+	sca_core::sca_module* scamod=dynamic_cast<sca_core::sca_module*>(obj);
+
+	if(scamod!=NULL) return scamod->get_cluster_id();
+
+	sca_core::sca_implementation::sca_solver_base* scasolv=dynamic_cast<sca_core::sca_implementation::sca_solver_base*>(obj);
+
+	if(scasolv!=NULL) return scasolv->get_cluster_id();
+
+	return -1;
+}
+
 
 //////////////////////////////////////////////////////////////////
 

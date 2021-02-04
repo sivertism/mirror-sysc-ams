@@ -3,6 +3,9 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1523 $
-   SVN last checkin  :  $Date: 2013-02-17 21:36:57 +0100 (Sun, 17 Feb 2013) $
+   SVN Version       :  $Revision: 2112 $
+   SVN last checkin  :  $Date: 2020-03-12 13:06:46 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_tdf_vsink.cpp 1523 2013-02-17 20:36:57Z karsten $
+   SVN Id            :  $Id: sca_eln_tdf_vsink.cpp 2112 2020-03-12 13:06:46Z karsten $
 
  *****************************************************************************/
 
@@ -65,6 +68,8 @@ void sca_vsink::trace( sc_core::sc_trace_file* tf ) const
 sca_vsink::sca_vsink(sc_core::sc_module_name, double scale_) :
 	p("p"), n("n"), outp("outp"), scale("scale", scale_)
 {
+	unit="A";
+	domain="I";
 }
 
 
@@ -87,13 +92,9 @@ void sca_vsink::matrix_stamps()
 
 bool sca_vsink::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type=through_value_type;
-    data.unit=through_value_unit;
-
     //trace will be activated after every complete cluster calculation
     //by teh synchronization layer
-    get_sync_domain()->add_solver_trace(data);
-    return true;
+    return get_sync_domain()->add_solver_trace(data);
 }
 void sca_vsink::trace(long id,sca_util::sca_implementation::sca_trace_buffer& buffer)
 {
@@ -107,6 +108,41 @@ sca_util::sca_complex sca_vsink::calculate_ac_result(sca_util::sca_complex* res_
 {
 	return sca_util::sca_complex(0.0,0.0);
 }
+
+/**
+   * experimental physical domain interface
+*/
+void sca_vsink::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_vsink::get_unit() const
+{
+	return unit;
+}
+
+void sca_vsink::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_vsink::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_vsink::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_vsink::get_domain() const
+{
+	return domain;
+}
+
+
 
 } //namespace sca_tdf
 } //namespace sca_eln

@@ -26,10 +26,10 @@
 
   Created on: 09.12.2009
 
-   SVN Version       :  $Revision: 1265 $
-   SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+   SVN Version       :  $Revision: 2046 $
+   SVN last checkin  :  $Date: 2017-09-20 12:41:42 +0000 (Wed, 20 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_sc_trace.h 1265 2011-11-19 20:43:31Z karsten $
+   SVN Id            :  $Id: sca_sc_trace.h 2046 2017-09-20 12:41:42Z karsten $
 
  *****************************************************************************/
 
@@ -53,7 +53,11 @@ public:
 	virtual void trace(long id,sca_trace_buffer& buffer) = 0;
 	virtual const sc_core::sc_event& get_trigger_event() = 0;
 
+	//for generalized ac-tracing
+	virtual const sc_core::sc_interface* get_sc_interface() const = 0;
+
 	virtual void set_type_info(sca_trace_object_data& data)=0;
+
 
 	sca_trace_object_data* data;
 
@@ -127,6 +131,12 @@ private:
 		return inp->default_event();
 	}
 
+
+	const sc_core::sc_interface* get_sc_interface() const
+	{
+		return inp;
+	}
+
 	void set_type_info(sca_trace_object_data& data)
 	{
 		sca_sc_type_extractor<TIF> tp(data);
@@ -153,6 +163,11 @@ private:
 	const sc_core::sc_event& get_trigger_event()
 	{
 		return (*inp)->default_event();
+	}
+
+	const sc_core::sc_interface* get_sc_interface() const
+	{
+		return(inp->get_interface());
 	}
 
 	void set_type_info(sca_trace_object_data& data)

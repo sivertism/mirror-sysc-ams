@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2017
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 25.08.2009
 
- SVN Version       :  $Revision: 1947 $
- SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $
+ SVN Version       :  $Revision: 2115 $
+ SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_solver_base.cpp 1947 2016-03-13 20:11:21Z karsten $
+ SVN Id            :  $Id: sca_solver_base.cpp 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -114,9 +114,13 @@ sca_solver_base::sca_solver_base(const char* solver_name,
 	post_method_object=NULL;
 
 	associated_module_deleted=false;
+
+	//ac per default disabled
+	this->ac_disable();
 }
 
-////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////
 
 void sca_solver_base::reset()
 {
@@ -148,7 +152,17 @@ sca_solver_base::~sca_solver_base()
 	for (std::vector<sca_sync_write_handle>::iterator it =
 			sca_sync_write_handles.begin(); it != sca_sync_write_handles.end(); ++it)
 	{
-		delete it->activation_event;
+		if(it->method_process_handle.valid())
+		{
+			it->method_process_handle.kill();
+		}
+
+
+		if(it->activation_event!=NULL)
+		{
+			delete it->activation_event;
+			it->activation_event=NULL;
+		}
 	}
 }
 
@@ -167,6 +181,10 @@ void sca_solver_base::set_solver_parameter(
 	SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
 }
 
+long sca_solver_base::get_cluster_id()
+{
+	return solver_object_data.cluster_id;
+}
 
 
 void sca_solver_base::terminate()
@@ -443,7 +461,24 @@ void sca_solver_base::sc_value_trace(int idl)
 	long csize = handle.count; //events yet stored in buffer
 
 	if (csize >= handle.size)
-		handle.resize(csize + 1); //if required resize buffer
+	{
+		//for the case the port is not read, we check whether we can remove values
+		//before we resize to prevent a memory leak
+		const sca_core::sca_time& cstime=this->csync_data->cluster_start_time;
+
+
+		while((handle.count>1) && (handle.time_points[handle.index_start]<cstime))
+		{
+			handle.index_start=(handle.index_start+1)%handle.size;
+			handle.count--;
+			csize=handle.count;
+		}
+
+		if (csize >= handle.size)
+		{
+			handle.resize(csize + 1); //if required resize buffer
+		}
+	}
 
 	long pos = (handle.index_start + csize) % handle.size; //ringb. pos for next ev.
 	handle.count++; //increase ev. counter
@@ -471,6 +506,9 @@ void sca_solver_base::sc_value_trace(int idl)
 void sca_solver_base::sc_write_value_process(int idl)
 {
 	sca_sync_write_handle& handle(sca_sync_write_handles[idl]); //get handle
+
+	//trigger next activation
+	next_trigger(*(handle.activation_event));
 
 	//due process is called during elaboration
 	if (handle.count <= 0)
@@ -529,7 +567,7 @@ void sca_solver_base::write_sc_value(::sc_core::sc_time ctime,
 				<< " " << __FILE__ << " line: " << __LINE__
 				<< " current sca-time: " << ctime << " current sc-time: "
 				<< ::sc_core::sc_time_stamp() << " sca-next-time:   "
-				<< next_time << " insert da delay of at least: "
+				<< next_time << " insert a delay of at least: "
 				<< sc_core::sc_time_stamp()-ctime ;
 
 		sca_core::sca_prim_channel* ch =
@@ -645,6 +683,7 @@ void sca_solver_base::get_sc_value_on_time(::sc_core::sc_time ctime,
 
 	sca_sync_trace_handle& handle(sync_trace_handles[val_handle.get_id()]); //get handle
 
+	//search the current value
 	while (handle.count > 1) //remove all out of date events
 	{
 		long index = (handle.index_start + 1) % handle.size;
@@ -767,7 +806,6 @@ void sca_solver_base::register_sca_schedule(::sc_core::sc_time next_time,
 
 	sc_core::sc_spawn_options opt;
 	opt.spawn_method();
-	opt.set_sensitivity(ev);
 
 	sca_sync_write_handles[handle.get_id()].method_process_handle=
 			sc_core::sc_spawn(
@@ -1084,9 +1122,10 @@ void sca_solver_base::add_cluster_trace(sca_util::sca_implementation::sca_trace_
 
 //////////////////////////////////////
 
-void sca_solver_base::add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj)
+bool sca_solver_base::add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj)
 {
 	solver_traces.push_back(&tr_obj);
+	return true;
 }
 
 //////////////////////////////////////

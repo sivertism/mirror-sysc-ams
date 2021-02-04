@@ -27,7 +27,7 @@
  Created on: 20.10.2009
 
  SVN Version       :  $Revision: 1577 $
- SVN last checkin  :  $Date: 2013-05-12 00:41:04 +0200 (Sun, 12 May 2013) $
+ SVN last checkin  :  $Date: 2013-05-11 22:41:04 +0000 (Sat, 11 May 2013) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_tdf_ct_ltf_nd_proxy.h 1577 2013-05-11 22:41:04Z karsten $
 

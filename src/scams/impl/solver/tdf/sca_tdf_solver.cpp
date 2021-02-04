@@ -26,10 +26,10 @@
 
   Created on: 25.08.2009
 
-   SVN Version       :  $Revision: 1920 $
-   SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+   SVN Version       :  $Revision: 2133 $
+   SVN last checkin  :  $Date: 2020-03-27 14:06:08 +0000 (Fri, 27 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_tdf_solver.cpp 1920 2016-02-25 12:43:37Z karsten $
+   SVN Id            :  $Id: sca_tdf_solver.cpp 2133 2020-03-27 14:06:08Z karsten $
 
  *****************************************************************************/
 
@@ -126,7 +126,7 @@ void sca_tdf_solver::register_decluster_port(sca_core::sca_implementation::sca_p
 	  {
 		  std::ostringstream str;
 		  str << "Internal error decluster port must be derived from ";
-		  str << "sca_port_attributes: " << port->sca_name();
+		  if(port!=NULL) str << "sca_port_attributes: " << port->sca_name();
 
 		  SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
 		  return;

@@ -28,10 +28,10 @@
 
   Created on: 14.05.2009
 
-   SVN Version       :  $Revision: 1947 $
-   SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $
+   SVN Version       :  $Revision: 2115 $
+   SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_solver_base.h 1947 2016-03-13 20:11:21Z karsten $
+   SVN Id            :  $Id: sca_solver_base.h 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -64,7 +64,9 @@ namespace sca_implementation
   solver can have a method which will be called by the synchronization
   layer.
 */
-class sca_solver_base :  public sca_synchronization_obj_if, public ::sc_core::sc_object
+class sca_solver_base :  public sca_synchronization_obj_if,
+                         public ::sc_core::sc_object,
+                         public sca_ac_analysis::sca_ac_object
 {
 
   typedef  std::vector<sca_synchronization_port_data*>            sca_sync_portListT;
@@ -90,6 +92,9 @@ class sca_solver_base :  public sca_synchronization_obj_if, public ::sc_core::sc
 		  const std::string& par,
 		  const std::string& val);
 
+
+  long get_cluster_id();
+
   virtual void initialize()=0;
 
     /**
@@ -101,8 +106,9 @@ class sca_solver_base :  public sca_synchronization_obj_if, public ::sc_core::sc
     /**
      * Adds trace which is activated (the trace method of the object is called)
      * by the specific solver (traces usually signals/values inside a solver)
+     * returns true if successful
      */
-  virtual void add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj);
+  virtual bool add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj);
 
   void push_back_sync_port(
                             sca_core::sca_implementation::sca_port_base*  port,

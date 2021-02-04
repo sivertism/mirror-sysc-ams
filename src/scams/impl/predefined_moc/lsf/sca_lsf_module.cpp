@@ -27,7 +27,7 @@
   Created on: 05.01.2010
 
    SVN Version       :  $Revision: 1920 $
-   SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+   SVN last checkin  :  $Date: 2016-02-25 12:43:37 +0000 (Thu, 25 Feb 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_lsf_module.cpp 1920 2016-02-25 12:43:37Z karsten $
 

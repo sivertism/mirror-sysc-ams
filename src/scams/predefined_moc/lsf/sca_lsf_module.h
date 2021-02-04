@@ -26,10 +26,10 @@
 
   Created on: 05.01.2010
 
-   SVN Version       :  $Revision: 1914 $
-   SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+   SVN Version       :  $Revision: 2048 $
+   SVN last checkin  :  $Date: 2017-09-20 15:24:12 +0000 (Wed, 20 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_lsf_module.h 1914 2016-02-23 18:06:06Z karsten $
+   SVN Id            :  $Id: sca_lsf_module.h 2048 2017-09-20 15:24:12Z karsten $
 
  *****************************************************************************/
 
@@ -97,6 +97,7 @@ public:
 
 	virtual const char* kind() const;
 
+
 private:
 	//used by the sca_eln_view to set references to eq-system and results
 	void set_equations(
@@ -158,13 +159,6 @@ protected:
 	 */
 	unsigned long add_equation(unsigned long num = 1);
 
-	//redirect to base class to prevent friend declaration for each module or
-	//protected declaration in sca_core::sca_module (in this case accesable
-	//e.g. in tdf modules)
-	sca_core::sca_implementation::sca_solver_base* get_sync_domain()
-	{
-		return sca_core::sca_module::get_sync_domain();
-	}
 
 	//redirect to base class to prevent friend declaration  ... see above
 	sca_core::sca_time get_time()

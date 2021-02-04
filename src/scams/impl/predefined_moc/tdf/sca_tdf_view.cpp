@@ -29,7 +29,7 @@
   Created on: 25.08.2009
 
    SVN Version       :  $Revision: 1947 $
-   SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $
+   SVN last checkin  :  $Date: 2016-03-13 20:11:21 +0000 (Sun, 13 Mar 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_tdf_view.cpp 1947 2016-03-13 20:11:21Z karsten $
 

@@ -29,7 +29,7 @@
  Created on: 07.03.2009
 
  SVN Version       :  $Revision: 1950 $
- SVN last checkin  :  $Date: 2016-03-21 13:45:39 +0100 (Mon, 21 Mar 2016) $ (UTC)
+ SVN last checkin  :  $Date: 2016-03-21 12:45:39 +0000 (Mon, 21 Mar 2016) $ (UTC)
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_eln_cccs.h 1950 2016-03-21 12:45:39Z karsten $
 

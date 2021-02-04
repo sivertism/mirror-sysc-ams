@@ -26,10 +26,10 @@
 
  Created on: 27.01.2012
 
- SVN Version       :  $Revision: 1715 $
- SVN last checkin  :  $Date: 2014-04-27 16:37:25 +0200 (Sun, 27 Apr 2014) $
+ SVN Version       :  $Revision: 2102 $
+ SVN last checkin  :  $Date: 2020-02-21 14:58:34 +0000 (Fri, 21 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_linear_solver_parameters.h 1715 2014-04-27 14:37:25Z karsten $
+ SVN Id            :  $Id: sca_linear_solver_parameters.h 2102 2020-02-21 14:58:34Z karsten $
 
  *****************************************************************************/
 
@@ -41,21 +41,6 @@ namespace sca_core
 {
 	namespace sca_implementation
 	{
-		/**
-		 * \brief The factorization of coefficient matrices in systems of linear
-		 * equations will be done by reinitialization using Gaussian
-		 * elimination with privotal search. The cur_algorithm of Woodbury will be
-		 * not used.
-		 */
-		void set_ignore_woodbury();
-
-		/**
-		 * \brief The factorization of coefficient matrices in systems of linear
-		 * equations will be done by reinitialization using Gaussian
-		 * elimination with privotal search and the cur_algorithm of Woodbury.
-		 */
-		void reset_ignore_woodbury();
-
 		/**
 		 * \brief forces the application of the implicit Euler method for
 		 * solving the linear DAE (no trapezoidal method)

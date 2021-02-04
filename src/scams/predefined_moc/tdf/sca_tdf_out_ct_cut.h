@@ -29,10 +29,10 @@
 
  Created on: 18.10.2011
 
- SVN Version       :  $Revision: 1980 $
- SVN last checkin  :  $Date: 2016-04-01 14:41:01 +0200 (Fri, 01 Apr 2016) $ (UTC)
+ SVN Version       :  $Revision: 2013 $
+ SVN last checkin  :  $Date: 2016-11-19 20:39:39 +0000 (Sat, 19 Nov 2016) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_out_ct_cut.h 1980 2016-04-01 12:41:01Z karsten $
+ SVN Id            :  $Id: sca_tdf_out_ct_cut.h 2013 2016-11-19 20:39:39Z karsten $
 
  *****************************************************************************/
 /*
@@ -103,21 +103,6 @@ public:
 	 */
     void force_typed_value(const T&);
 
-    /**
-     * releases forced value
-     */
-    virtual void release_value();
-
-    /**
-     * registers trace callback
-     */
-    virtual bool register_trace_callback(
-    		sca_util::sca_traceable_object::sca_trace_callback,void*);
-
-    /**
-     * gets current value as string
-     */
-    virtual const std::string& get_trace_value() const;
 
 private:
 	// Disabled
@@ -195,7 +180,7 @@ const T& sca_out<T,SCA_CT_CUT,INTERP>::get_typed_trace_value() const
 
 	if(scasig==NULL)
 	{
-		static const T dummy;
+		static const T dummy=T();
 		return dummy;
 	}
 
@@ -220,57 +205,6 @@ void sca_out<T,SCA_CT_CUT,INTERP>::force_typed_value(const T& val)
 	scasig->force_typed_value(val);
 }
 
-/** method of interactive interface, which release forced a value
- */
-template<class T,class INTERP>
-void sca_out<T,SCA_CT_CUT,INTERP>::release_value()
-{
-	sc_core::sc_interface* scif=this->get_interface();
-	sca_tdf::sca_signal<T>* scasig=
-			dynamic_cast<sca_tdf::sca_signal<T>*>(scif);
-
-	if(scasig==NULL)
-	{
-		return;
-	}
-
-	scasig->release_value();
-}
-
-
-template<class T,class INTERP>
-bool sca_out<T,SCA_CT_CUT,INTERP>::register_trace_callback(
-		sca_util::sca_traceable_object::sca_trace_callback cb,
-		void* arg)
-{
-	sc_core::sc_interface* scif=this->get_interface();
-	sca_tdf::sca_signal<T>* scasig=
-			dynamic_cast<sca_tdf::sca_signal<T>*>(scif);
-
-	if(scasig==NULL)
-	{
-		return false;
-	}
-
-	return scasig->register_trace_callback(cb,arg);
-}
-
-
-template<class T,class INTERP>
-const std::string& sca_out<T,SCA_CT_CUT,INTERP>::get_trace_value() const
-{
-	const sc_core::sc_interface* scif=this->get_interface();
-	const sca_tdf::sca_signal<T>* scasig=
-			dynamic_cast<const sca_tdf::sca_signal<T>*>(scif);
-
-	if(scasig==NULL)
-	{
-		static const std::string empty_string;
-		return empty_string;
-	}
-
-	return scasig->get_trace_value();
-}
 
 
 template<class T,class INTERP>

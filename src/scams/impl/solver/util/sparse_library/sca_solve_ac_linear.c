@@ -28,10 +28,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1925 $
-   SVN last checkin  :  $Date: 2016-02-26 09:23:53 +0100 (Fri, 26 Feb 2016) $
+   SVN Version       :  $Revision: 2021 $
+   SVN last checkin  :  $Date: 2017-01-16 16:53:19 +0000 (Mon, 16 Jan 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_solve_ac_linear.c 1925 2016-02-26 08:23:53Z karsten $
+   SVN Id            :  $Id: sca_solve_ac_linear.c 2021 2017-01-16 16:53:19Z karsten $
 
  *****************************************************************************/
 
@@ -111,7 +111,13 @@ int sca_solve_ac_linear(
                        struct sca_solve_ac_linear_data** data
                     )
 {
-    return MA_LequSparseSolut((struct sparse*)((*data)->Spa), &((*data)->Cod), B, x);
+	int errc=MA_LequSparseSolut((struct sparse*)((*data)->Spa), &((*data)->Cod), B, x);
+	if(errc!=0)
+	{
+		(*data)->critical_row=(*data)->Cod.critical_line;
+	}
+
+    return errc;
 }
 
 

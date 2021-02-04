@@ -27,7 +27,7 @@
   Created on: 26.08.2009
 
    SVN Version       :  $Revision: 1812 $
-   SVN last checkin  :  $Date: 2015-01-06 21:47:51 +0100 (Tue, 06 Jan 2015) $
+   SVN last checkin  :  $Date: 2015-01-06 20:47:51 +0000 (Tue, 06 Jan 2015) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_globals.cpp 1812 2015-01-06 20:47:51Z karsten $
 

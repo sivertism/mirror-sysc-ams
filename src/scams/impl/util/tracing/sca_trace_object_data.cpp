@@ -28,10 +28,10 @@
 
   Created on: 13.11.2009
 
-   SVN Version       :  $Revision: 1892 $
-   SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $
+   SVN Version       :  $Revision: 2108 $
+   SVN last checkin  :  $Date: 2020-03-03 11:39:53 +0000 (Tue, 03 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_trace_object_data.cpp 1892 2016-01-10 11:59:12Z karsten $
+   SVN Id            :  $Id: sca_trace_object_data.cpp 2108 2020-03-03 11:39:53Z karsten $
 
  *****************************************************************************/
 
@@ -110,6 +110,7 @@ sca_trace_object_data::sca_trace_object_data()
     type="";
     unit="-";
 
+
     trace_object = NULL;
     trace_buffer = NULL;
     trace_base   = NULL;
@@ -146,12 +147,12 @@ void sca_trace_object_data::trace_init(sca_trace_file_base*   trace_str)
     word   = id/(8*sizeof(long));
     nwords = number_of_traces/(8*sizeof(long)) + 1;
 
-    unsigned long bit=id - (nwords-1)*8*sizeof(long);
+    unsigned long bit=id % (8*sizeof(long));
     bit_mask =  ~((unsigned long)1 << bit);
 
-    if(word>=nwords-1)
+    if(word>=nwords-1)  //last word
     {
-        unsigned long used_bits=number_of_traces-8*sizeof(unsigned long)*(nwords-1);
+        unsigned long used_bits=number_of_traces % (8*sizeof(unsigned long));
         unsigned long empty_bit_mask = ((unsigned long)1 << used_bits) - 1;
         bit_mask&=empty_bit_mask;
     }

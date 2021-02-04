@@ -26,10 +26,10 @@
 
  Created on: 13.05.2009
 
- SVN Version       :  $Revision: 1265 $
- SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+ SVN Version       :  $Revision: 2102 $
+ SVN last checkin  :  $Date: 2020-02-21 14:58:34 +0000 (Fri, 21 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_interface.cpp 1265 2011-11-19 20:43:31Z karsten $
+ SVN Id            :  $Id: sca_interface.cpp 2102 2020-02-21 14:58:34Z karsten $
 
  *****************************************************************************/
 
@@ -37,10 +37,13 @@
 
 
 #include <systemc>
+#include "scams/core/sca_physical_domain_interface.h"
 #include "scams/core/sca_interface.h"
 #include "scams/core/sca_time.h"
 #include "scams/impl/core/sca_simcontext.h"
 #include "scams/impl/core/sca_object_manager.h"
+
+#include <sstream>
 
 using namespace sca_core;
 using namespace sca_core::sca_implementation;
@@ -51,8 +54,25 @@ namespace sca_core
 //may be not required
 sca_interface::sca_interface()
 {
-	sca_core::sca_implementation::sca_get_curr_simcontext()->get_sca_object_manager()->insert_interface(
-			this);
+	sca_core::sca_implementation::sca_simcontext* simc;
+	simc=sca_core::sca_implementation::sca_get_curr_simcontext();
+
+	if(simc==NULL)
+	{
+		std::ostringstream str;
+		str << "Cannot create a new interface after the simulation has been finished";
+		str << " or a module or sca_interface has been deleted";
+
+		sc_core::sc_object* obj=dynamic_cast<sc_core::sc_object*>(this);
+		if(obj!=NULL)
+		{
+			str << " for: " << obj->name();
+		}
+		SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+		return;
+	}
+
+	simc->get_sca_object_manager()->insert_interface(this);
 }
 
 //disabled copy constructor

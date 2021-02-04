@@ -26,10 +26,10 @@
 
  Created on: 27.08.2009
 
- SVN Version       :  $Revision: 1265 $
- SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+ SVN Version       :  $Revision: 2038 $
+ SVN last checkin  :  $Date: 2017-03-06 14:39:39 +0000 (Mon, 06 Mar 2017) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_sync_value_handle.h 1265 2011-11-19 20:43:31Z karsten $
+ SVN Id            :  $Id: sca_sync_value_handle.h 2038 2017-03-06 14:39:39Z karsten $
 
  *****************************************************************************/
 
@@ -88,7 +88,7 @@ class sca_sync_value_handle: public sca_core::sca_implementation::sca_sync_value
 	std::vector<T> values;
 	void resize(int i);
 
-	T value;
+	mutable T value;
 	T value_backup;
 
 public:
@@ -99,7 +99,7 @@ public:
 
 	void write_tmp(T value_tmp);
 	void write(T value_tmp);
-	const T& read();
+	const T& read() const;
 	void backup_tmp();
 	void restore_tmp();
 
@@ -162,9 +162,9 @@ inline void sca_sync_value_handle<T>::write(T value_tmp)
 }
 
 template<class T>
-inline const T& sca_sync_value_handle<T>::read()
+inline const T& sca_sync_value_handle<T>::read() const
 {
-	value = values[index];
+	if(values.size()>std::size_t(index)) value = values[index];
 	return value;
 }
 

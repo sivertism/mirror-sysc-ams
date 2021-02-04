@@ -27,7 +27,7 @@
   Created on: 03.01.2010
 
    SVN Version       :  $Revision: 1907 $
-   SVN last checkin  :  $Date: 2016-02-13 20:18:55 +0100 (Sat, 13 Feb 2016) $
+   SVN last checkin  :  $Date: 2016-02-13 19:18:55 +0000 (Sat, 13 Feb 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_ac_functions.cpp 1907 2016-02-13 19:18:55Z karsten $
 

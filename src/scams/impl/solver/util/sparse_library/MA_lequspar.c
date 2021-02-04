@@ -26,10 +26,10 @@
 
  Created on: 22.10.2009
 
- SVN Version       :  $Revision: 1929 $
- SVN last checkin  :  $Date: 2016-02-26 16:49:09 +0100 (Fri, 26 Feb 2016) $
+ SVN Version       :  $Revision: 2023 $
+ SVN last checkin  :  $Date: 2017-01-17 09:33:22 +0000 (Tue, 17 Jan 2017) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: MA_lequspar.c 1929 2016-02-26 15:49:09Z karsten $
+ SVN Id            :  $Id: MA_lequspar.c 2023 2017-01-17 09:33:22Z karsten $
 
  *****************************************************************************/
 
@@ -74,7 +74,7 @@
  *  Purpose :  sparse matrix lin. equation solver
  *  Notes   :
  *  Author  :  C.Clauss
- *  Version :  $Id: MA_lequspar.c 1929 2016-02-26 15:49:09Z karsten $
+ *  Version :  $Id: MA_lequspar.c 2023 2017-01-17 09:33:22Z karsten $
  *
  */
 
@@ -1267,7 +1267,10 @@ exportMA_Sparse err_code MA_LequSparseSolut(struct sparse* sA,
 		{
 			if (r[code->zerodemand[l]] > code->piv_abs_tol
 					|| r[code->zerodemand[l]] < -code->piv_abs_tol)
+			{
 				ret = 5;
+			    code->critical_line=code->isort[l];
+			}
 		}
 
 		/* backward substitution */

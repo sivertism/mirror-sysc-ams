@@ -3,7 +3,7 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2017
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 08.03.2009
 
- SVN Version       :  $Revision: 1914 $
- SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_traceable_object.h 1914 2016-02-23 18:06:06Z karsten $
+ SVN Id            :  $Id: sca_traceable_object.h 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 /*
@@ -64,11 +64,27 @@ public:
 
 	typedef void (*sca_trace_callback)(void*);
 
+	//placeholder for callback functor
+	class callback_functor_base
+	{
+	public:
+		virtual void operator()()=0;
+
+		virtual ~callback_functor_base(){}
+	};
+
 	/** introspection interface */
 
 	/** adds callback for introspection */
 	virtual bool register_trace_callback(sca_trace_callback,void*)
 	{ return false;}
+
+	virtual bool register_trace_callback(callback_functor_base&)
+	{ return false;}
+
+	virtual bool remove_trace_callback(callback_functor_base&)
+	{ return false;}
+
 
 	/** returns current value */
 	virtual const std::string& get_trace_value() const { return empty_string;}
@@ -87,28 +103,11 @@ public:
 	}
 
 
-	void set_unit(const std::string& unit);
-	const std::string& get_unit() const;
-
-	void set_unit_prefix(const std::string& prefix);
-	const std::string& get_unit_prefix() const;
-
-	void set_domain(const std::string& domain);
-	const std::string& get_domain() const;
-
 protected:
 
 	/*implementation-defined*/
 
 	const std::string empty_string;
-
-private:
-
-
-    std::string unit;
-    std::string unit_prefix;
-    std::string domain;
-
 };
 
 } // namespace sca_util

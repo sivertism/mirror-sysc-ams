@@ -3,7 +3,7 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: October 09, 2012
 
- SVN Version       :  $Revision: 1928 $
- SVN last checkin  :  $Date: 2016-02-26 16:40:16 +0100 (Fri, 26 Feb 2016) $
+ SVN Version       :  $Revision: 2109 $
+ SVN last checkin  :  $Date: 2020-03-03 14:22:27 +0000 (Tue, 03 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: linear_direct_sparse.c 1928 2016-02-26 15:40:16Z karsten $
+ SVN Id            :  $Id: linear_direct_sparse.c 2109 2020-03-03 14:22:27Z karsten $
 
  *****************************************************************************/
 
@@ -124,6 +124,7 @@ void sparse_delete(sparse_matrix *sm)
 	if (sm != NULL)
 	{
 		MA_FreeSparse(sm);
+		free(sm);
 		sm = NULL;
 	}
 }
@@ -318,7 +319,7 @@ sparse_matrix* sparse_copy(
 		)
 {
 	if(sm1 == NULL)
-		sparse_generate(0,0);
+		sm1=sparse_generate(0,0);
 
 	if(sm2 == NULL)
 	{

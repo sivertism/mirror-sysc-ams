@@ -26,10 +26,10 @@
 
   Created on: 09.10.2009
 
-   SVN Version       :  $Revision: 1814 $
-   SVN last checkin  :  $Date: 2015-01-16 09:38:55 +0100 (Fri, 16 Jan 2015) $
+   SVN Version       :  $Revision: 1995 $
+   SVN last checkin  :  $Date: 2016-08-23 14:59:38 +0000 (Tue, 23 Aug 2016) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_matrix_base_complex.h 1814 2015-01-16 08:38:55Z karsten $
+   SVN Id            :  $Id: sca_matrix_base_complex.h 1995 2016-08-23 14:59:38Z karsten $
 
  *****************************************************************************/
 
@@ -87,6 +87,12 @@ protected:
     sca_matrix_base(unsigned long x, bool sparse_mode=false);                   //vector not resizable
     sca_matrix_base(unsigned long y, unsigned long x, bool sparse_mode=false);  //matrix not resizable
     sca_matrix_base(const sca_matrix_base<sca_util::sca_complex>& m);       //copied matrix
+
+#if __cplusplus >= 201103L
+    sca_matrix_base(const std::initializer_list<sca_util::sca_complex>&);
+
+    sca_matrix_base(const std::initializer_list<std::initializer_list<sca_util::sca_complex> >&);
+#endif
 
     virtual ~sca_matrix_base();
 

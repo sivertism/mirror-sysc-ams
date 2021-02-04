@@ -3,6 +3,9 @@
     Copyright 2010-2012
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
  Created on: Jan 22, 2010
 
- SVN Version       :  $Revision: 1910 $
- SVN last checkin  :  $Date: 2016-02-16 13:44:37 +0100 (Tue, 16 Feb 2016) $
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_eln_transmission_line.cpp 1910 2016-02-16 12:44:37Z karsten $
+ SVN Id            :  $Id: sca_eln_transmission_line.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 

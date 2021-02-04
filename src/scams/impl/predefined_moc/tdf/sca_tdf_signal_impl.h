@@ -28,10 +28,10 @@
 
  Created on: 06.08.2009
 
- SVN Version       :  $Revision: 1892 $
- SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_signal_impl.h 1892 2016-01-10 11:59:12Z karsten $
+ SVN Id            :  $Id: sca_tdf_signal_impl.h 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 /*
@@ -77,13 +77,13 @@ public:
 	virtual const T& read(unsigned long port, unsigned long sample) const=0;
 
 	/** Port write to the first sample */
-	virtual void write(unsigned long port, T value)=0;
+	virtual void write(unsigned long port,const T& value)=0;
 
 	/** Port write for an an arbitrary sample (sample must be < rate) */
-	virtual void write(unsigned long port, T value, unsigned long sample)=0;
+	virtual void write(unsigned long port,const T& value, unsigned long sample)=0;
 
 	/** Port write for an an arbitrary sample (sample must be < rate) */
-	virtual void initialize(unsigned long port, T value, unsigned long sample)=0;
+	virtual void initialize(unsigned long port,const T& value, unsigned long sample)=0;
 
 	/** returns reference to a buffer element to write - for
 	 * implementing the [] operator of an outport (sample must be < rate) */
@@ -135,13 +135,13 @@ public:
 	T& read_delayed_value(unsigned long port,unsigned long sample) const;
 
 	/** Port write to the first sample */
-	void write(unsigned long port, T value);
+	void write(unsigned long port,const T& value);
 
 	/** Port write for an an arbitrary sample (sample must be < rate) */
-	void write(unsigned long port, T value, unsigned long sample);
+	void write(unsigned long port,const T& value, unsigned long sample);
 
 	/** Port initialize for an an arbitrary sample (sample must be < delay) */
-	void initialize(unsigned long port, T value, unsigned long sample);
+	void initialize(unsigned long port,const T& value, unsigned long sample);
 
 	/** returns reference to a buffer element to write - for
 	 * implementing the [] operator of an outport (sample must be < rate) */
@@ -186,6 +186,18 @@ public:
 
 	virtual ~sca_tdf_signal_impl();
 
+	/**
+	 * experimental physical domain mehtods
+	 */
+	virtual void set_unit(const std::string& unit);
+	virtual const std::string& get_unit() const;
+
+	virtual void set_unit_prefix(const std::string& prefix);
+	virtual const std::string& get_unit_prefix() const;
+
+	virtual void set_domain(const std::string& domain);
+	virtual const std::string& get_domain() const;
+
 
 private:
 
@@ -217,6 +229,11 @@ private:
 
 	T forced_value;
 
+	mutable T quick_value;
+
+	std::string unit;
+	std::string unit_prefix;
+	std::string domain;
 
 };
 
@@ -237,6 +254,8 @@ void sca_tdf_signal_impl<T>::set_force_value(const std::string& stri)
 		str << this->name() << " in method force_value - use force_typed_value instead";
 		SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
 	}
+
+	this->force_forced_value();
 }
 
 template<class T>
@@ -304,7 +323,15 @@ void sca_tdf_signal_impl<T>::set_type_info(sca_util::sca_implementation::sca_tra
 template<class T>
 inline void sca_tdf_signal_impl<T>::create_buffer(unsigned long size)
 {
-	buffer = new T[size];
+	if(size==1)
+	{
+		buffer=&quick_value;
+	}
+	else
+	{
+		buffer = new T[size];
+	}
+
 	for (unsigned long i = 0; i < size; ++i)
 		buffer[i] = T();
 }
@@ -456,8 +483,21 @@ inline void sca_tdf_signal_impl<T>::resize_buffer()
 		//nothing to do
 		if(new_buffer_size==buffer_size) return;
 
-		delete [] buffer;
-		buffer = new T[new_buffer_size];
+		if(buffer!=&quick_value)
+		{
+			delete [] buffer;
+		}
+		buffer=NULL;
+
+		if(new_buffer_size==1)
+		{
+			buffer=&quick_value;
+		}
+		else
+		{
+			buffer = new T[new_buffer_size];
+		}
+
 		buffer_size=new_buffer_size;
 
 		return;
@@ -466,7 +506,17 @@ inline void sca_tdf_signal_impl<T>::resize_buffer()
 
 
 	//create and initialize new buffer
-	T* new_buffer=new T[new_buffer_size];
+
+	T* new_buffer;
+	if(buffer_size==1)
+	{
+		new_buffer=&quick_value;
+	}
+	else
+	{
+		new_buffer=new T[new_buffer_size];
+	}
+
 	for (unsigned long i = 0; i < new_buffer_size; ++i)  new_buffer[i] = T();
 
 
@@ -522,7 +572,8 @@ inline void sca_tdf_signal_impl<T>::resize_buffer()
 	reinitialize_indelays();
 	indelay_start_sample=get_samples_per_period();
 
-	if(buffer!=NULL) delete [] buffer;
+	if((buffer!=NULL)&&(buffer!=&quick_value)) delete [] buffer;
+
 	buffer=new_buffer;
 	buffer_size=new_buffer_size;
 
@@ -565,6 +616,12 @@ inline const T& sca_tdf_signal_impl<T>::read(unsigned long port) const
 {
 	if(this->force_value_flag) return forced_value;
 
+	//optimization for buffer_size=1 -> usual case especially for single rate
+	if(buffer_size==1)
+	{
+		return quick_value;
+	}
+
 	sc_dt::int64 read_pos = (sc_dt::int64) (*(call_counter_refs[port]) * *rates[port])
 			+  buffer_offsets[port];  // - delay[port]
 
@@ -582,31 +639,38 @@ template<class T>
 inline const T& sca_tdf_signal_impl<T>::read(unsigned long port,
 		unsigned long sample) const
 {
-	if (sample >= *rates[port])
+	//optimization for buffer_size=1 -> usual case especially for single rate
+	if((buffer_size==1)&&(sample==0)&&(sample==0)&&!force_value_flag)
 	{
-		std::ostringstream str;
-		str << "Access to sample >= rate not allowed for port: "
-				<< get_connected_port_list()[port]->sca_name() << std::endl;
-		SC_REPORT_ERROR("SystemC-AMS", str.str().c_str());
+		return quick_value;
 	}
+	else
+	{
+		if (sample >= *rates[port])
+		{
+			std::ostringstream str;
+			str << "Access to sample >= rate not allowed for port: "
+				<< get_connected_port_list()[port]->sca_name() << std::endl;
+			SC_REPORT_ERROR("SystemC-AMS", str.str().c_str());
+		}
 
-	if(this->force_value_flag) return forced_value;
+		if(this->force_value_flag) return forced_value;
 
-	sc_dt::int64 read_pos = (sc_dt::int64) (*(call_counter_refs[port]) * *rates[port]
+
+		sc_dt::int64 read_pos = (sc_dt::int64) (*(call_counter_refs[port]) * *rates[port]
 	                                   + sample +  buffer_offsets[port] );
 
-	//start phase with separate indelay buffer
-	if(read_pos<indelay_start_sample)
-	{
-		if(in_delay_buffer[port]!=NULL)
+		//start phase with separate indelay buffer
+		if(read_pos<indelay_start_sample)
 		{
-			return (in_delay_buffer[port])[read_pos-indelay_start_sample -buffer_offsets[port] ];
+			if(in_delay_buffer[port]!=NULL)
+			{
+				return (in_delay_buffer[port])[read_pos-indelay_start_sample -buffer_offsets[port] ];
+			}
 		}
+
+		return buffer[read_pos% buffer_size];
 	}
-
-
-
-	return buffer[read_pos% buffer_size];
 }
 
 
@@ -673,15 +737,24 @@ inline T& sca_tdf_signal_impl<T>::read_delayed_value(unsigned long port,
 
 /** Port write to the first sample */
 template<class T>
-inline void sca_tdf_signal_impl<T>::write(unsigned long port, T value)
+inline void sca_tdf_signal_impl<T>::write(unsigned long port,const T& value)
 {
 	//		cout << "Write at pos.: " <<  (unsigned long long) ( *(call_counter_refs[port]) * rates[port]
 	//		                + buffer_offsets[port] ) % buffer_size << " value: " << value << endl;
 
-	sc_dt::int64 call_cnt = *(call_counter_refs[port]);
+	//optimization for buffer_size=1 -> usual case especially for single rate
+	if(buffer_size==1)
+	{
+		quick_value=value;
+	}
+	else
+	{
 
-	buffer[(sc_dt::uint64) (call_cnt * *rates[port] + buffer_offsets[port])
-			% buffer_size] = value;
+		sc_dt::int64 call_cnt = *(call_counter_refs[port]);
+
+		buffer[(sc_dt::uint64) (call_cnt * *rates[port] + buffer_offsets[port])
+			   	   	   	   	   	   	   % buffer_size] = value;
+	}
 
 }
 
@@ -693,19 +766,28 @@ template<class T>
 inline T& sca_tdf_signal_impl<T>::get_ref_for_write(unsigned long port,
 		unsigned long sample) const
 {
-	sc_dt::int64 call_cnt = *(call_counter_refs[port]);
-
-
-	if (sample >= *rates[port])
+	//optimization for buffer_size=1 -> usual case especially for single rate
+	if((buffer_size==1)&&sample==0)
 	{
-		std::ostringstream str;
-		str << "access to sample >= rate not allowed for port: "
-				<< get_connected_port_list()[port]->sca_name() << std::endl;
-		SC_REPORT_ERROR("SystemC-AMS", str.str().c_str());
+		return quick_value;
 	}
+	else
+	{
 
-	return buffer[(sc_dt::uint64) (call_cnt * *rates[port] + buffer_offsets[port]
-			+ sample) % buffer_size];
+		sc_dt::int64 call_cnt = *(call_counter_refs[port]);
+
+
+		if (sample >= *rates[port])
+		{
+			std::ostringstream str;
+			str << "access to sample >= rate not allowed for port: "
+				<< get_connected_port_list()[port]->sca_name() << std::endl;
+			SC_REPORT_ERROR("SystemC-AMS", str.str().c_str());
+		}
+
+		return buffer[(sc_dt::uint64) (call_cnt * *rates[port] + buffer_offsets[port]
+													+ sample) % buffer_size];
+	}
 }
 
 
@@ -713,16 +795,26 @@ inline T& sca_tdf_signal_impl<T>::get_ref_for_write(unsigned long port,
 
 /** Port write for an an arbitrary sample (sample must be < rate) */
 template<class T>
-inline void sca_tdf_signal_impl<T>::write(unsigned long port, T value,
+inline void sca_tdf_signal_impl<T>::write(unsigned long port,const T& value,
 		unsigned long sample)
 {
-	get_ref_for_write(port,sample)=value;
+
+	//optimization for buffer_size=1 -> usual case especially for single rate
+	if((buffer_size==1)&&sample==0)
+	{
+		quick_value=value;
+		//*buffer=value;
+	}
+	else
+	{
+		get_ref_for_write(port,sample)=value;
+	}
 }
 
 
 /** Port write for an an arbitrary sample (sample must be < rate) */
 template<class T>
-inline void sca_tdf_signal_impl<T>::initialize(unsigned long port, T value,
+inline void sca_tdf_signal_impl<T>::initialize(unsigned long port,const T& value,
 		unsigned long sample)
 {
 	if (sample >= *delays[port])
@@ -820,7 +912,10 @@ template<class T>
 inline sca_tdf_signal_impl<T>::~sca_tdf_signal_impl()
 {
 
-	delete[] buffer;
+	if(buffer!=&quick_value)
+	{
+		delete[] buffer;
+	}
 
 	for (typename std::vector<T*>::iterator it = in_delay_buffer.begin(); it
 			!= in_delay_buffer.end(); ++it)
@@ -828,6 +923,43 @@ inline sca_tdf_signal_impl<T>::~sca_tdf_signal_impl()
 		if( *it != NULL) delete[] *it;
 	}
 }
+
+template<class T>
+inline void sca_tdf_signal_impl<T>::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+template<class T>
+inline const std::string& sca_tdf_signal_impl<T>::get_unit() const
+{
+	return unit;
+}
+
+template<class T>
+inline void sca_tdf_signal_impl<T>::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+template<class T>
+inline const std::string& sca_tdf_signal_impl<T>::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+template<class T>
+inline void sca_tdf_signal_impl<T>::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+template<class T>
+inline const std::string& sca_tdf_signal_impl<T>::get_domain() const
+{
+	return domain;
+}
+
 
 } //namespace sca_implentation
 } //namespace sca_tdf

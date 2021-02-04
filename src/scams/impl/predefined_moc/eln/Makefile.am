@@ -44,7 +44,13 @@ CXX_FILES = \
 	sca_eln_vcvs.cpp \
 	sca_eln_view.cpp \
 	sca_eln_vsource.cpp \
-	sca_eln_transmission_line.cpp
+	sca_eln_transmission_line.cpp \
+	sca_eln_vcc.cpp \
+	sca_eln_vcr.cpp \
+	sca_eln_vcl.cpp \
+	sca_eln_ccr.cpp \
+	sca_eln_ccc.cpp \
+	sca_eln_ccl.cpp
 
 NO_CXX_FILES =
 

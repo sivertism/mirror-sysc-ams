@@ -28,10 +28,10 @@
 
  Created on: 04.03.2009
 
- SVN Version       :  $Revision: 1908 $
- SVN last checkin  :  $Date: 2016-02-15 18:59:13 +0100 (Mon, 15 Feb 2016) $ (UTC)
+ SVN Version       :  $Revision: 2134 $
+ SVN last checkin  :  $Date: 2020-03-30 06:24:13 +0000 (Mon, 30 Mar 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_trace_variable.h 1908 2016-02-15 17:59:13Z karsten $
+ SVN Id            :  $Id: sca_tdf_trace_variable.h 2134 2020-03-30 06:24:13Z karsten $
 
  *****************************************************************************/
 /*
@@ -56,6 +56,8 @@ class sca_trace_variable: public sca_tdf::sca_implementation::sca_trace_variable
 {
 public:
 	sca_trace_variable();
+	~sca_trace_variable();
+
 	explicit sca_trace_variable(const char* );
 
 	virtual const char* kind() const;
@@ -90,12 +92,16 @@ public:
 	 */
     void force_typed_value(const T&);
 
+	virtual void print( std::ostream& = std::cout ) const;
+	virtual void dump( std::ostream& = std::cout ) const;
+
 
 //Begin implementation specific
 
 private:
 
-	std::vector<T> buffer;
+	T* buffer; //due std::vector<bool> operator [] does not return a reference
+
 	T last_value;
 	T active_value;
 
@@ -122,10 +128,21 @@ private:
 
 //Begin implementation specific
 
+template<class T>
+inline void sca_trace_variable<T>::print( std::ostream& str) const
+{
+	str << this->get_typed_trace_value();
+}
+
+template<class T>
+inline void sca_trace_variable<T>::dump( std::ostream&  str) const
+{
+	str << this->kind() << " : " << this->name() << " value: "<< this->get_typed_trace_value();
+}
 
 
 template<class T>
-void sca_trace_variable<T>::set_force_value(const std::string& stri)
+inline void sca_trace_variable<T>::set_force_value(const std::string& stri)
 {
 	if(!sca_util::sca_implementation::convert_from_string(forced_value,stri))
 	{
@@ -138,7 +155,7 @@ void sca_trace_variable<T>::set_force_value(const std::string& stri)
 
 
 template<class T>
-void sca_trace_variable<T>::force_typed_value(const T& val)
+inline void sca_trace_variable<T>::force_typed_value(const T& val)
 {
 	forced_value=val;
 
@@ -173,7 +190,7 @@ inline const std::string& sca_trace_variable<T>::get_current_trace_value(unsigne
 }
 
 template<class T>
-const T& sca_trace_variable<T>::get_typed_trace_value() const
+inline const T& sca_trace_variable<T>::get_typed_trace_value() const
 {
 	if(this->force_value_flag)
 	{
@@ -186,6 +203,7 @@ const T& sca_trace_variable<T>::get_typed_trace_value() const
 	}
 
 	long idx=this->get_trace_value_index();
+
 	return buffer[idx];
 }
 
@@ -200,9 +218,28 @@ inline void sca_trace_variable<T>::set_type_info(sca_util::sca_implementation::s
 template<class T>
 inline void sca_trace_variable<T>::resize_buffer(long n)
 {
-	buffer.resize(n,active_value);
-	time_buffer.resize(n);
-	buffer_size=n;
+	if(buffer==NULL)
+	{
+		buffer=new T[n];
+		for(long i=0;i<n;++i) buffer[i]=active_value;
+
+		time_buffer.resize(n);
+		buffer_size=n;
+		return;
+	}
+
+	if(buffer_size!=n)
+	{
+		T* nb=new T[n];
+		for(long i=0;i<buffer_size;++i) nb[i]=buffer[i];
+		for(long i=buffer_size;i<n;++i) nb[i]=active_value;
+		delete[] buffer;
+		buffer=nb;
+
+		time_buffer.resize(n);
+		buffer_size=n;
+	}
+
 }
 
 
@@ -225,12 +262,20 @@ inline sca_trace_variable<T>::sca_trace_variable():
 	sca_tdf::sca_implementation::sca_trace_variable_base(
 			sc_core::sc_gen_unique_name("sca_tdf_trace_variable"))
 {
+	this->buffer=NULL;
+}
+
+template<class T>
+inline sca_trace_variable<T>::~sca_trace_variable()
+{
+	if(buffer!=NULL) delete[] buffer;
 }
 
 template<class T>
 inline sca_trace_variable<T>::sca_trace_variable(const char* name_):
 	sca_tdf::sca_implementation::sca_trace_variable_base(name_)
 {
+	this->buffer=NULL;
 }
 
 template<class T>

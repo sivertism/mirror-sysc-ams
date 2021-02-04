@@ -27,7 +27,7 @@
   Created on: 02.01.2010
 
    SVN Version       :  $Revision: 1523 $
-   SVN last checkin  :  $Date: 2013-02-17 21:36:57 +0100 (Sun, 17 Feb 2013) $
+   SVN last checkin  :  $Date: 2013-02-17 20:36:57 +0000 (Sun, 17 Feb 2013) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_ac_domain_eq.h 1523 2013-02-17 20:36:57Z karsten $
 

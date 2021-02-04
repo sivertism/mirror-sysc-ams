@@ -4,6 +4,9 @@
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
 
+	Copyright 2015-2017
+	COSEDA Technologies GmbH
+
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
@@ -26,10 +29,10 @@
 
  Created on: 15.05.2009
 
- SVN Version       :  $Revision: 1658 $
- SVN last checkin  :  $Date: 2013-12-01 18:36:41 +0100 (Sun, 01 Dec 2013) $
+ SVN Version       :  $Revision: 2039 $
+ SVN last checkin  :  $Date: 2017-03-06 14:42:55 +0000 (Mon, 06 Mar 2017) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_port_base.cpp 1658 2013-12-01 17:36:41Z karsten $
+ SVN Id            :  $Id: sca_port_base.cpp 2039 2017-03-06 14:42:55Z karsten $
 
  *****************************************************************************/
 
@@ -93,6 +96,19 @@ sca_interface* sca_port_base::create_synchronization_channel()
 }
 
 /////////////////////////////////////////
+
+bool sca_port_base::add_cluster_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj)
+{
+	if(this->get_parent_module()==NULL) return false;
+
+	if(this->get_parent_module()->get_sync_domain()==NULL) return false;
+
+	this->get_parent_module()->get_sync_domain()->add_cluster_trace(tr_obj);
+
+	return true;
+}
+
+///////////////////////////////////////////
 
 const char* sca_port_base::sca_name()
 {
@@ -242,6 +258,68 @@ void sca_port_base::set_type_info(sca_util::sca_implementation::sca_trace_object
 void sca_port_base::port_processing_method()
 {
 }
+
+
+/** redirect interactive debug methods to connected signal */
+const std::string& sca_port_base::get_trace_value() const
+{
+	const sc_core::sc_interface* scif=this->sc_get_interface();
+	const sca_util::sca_traceable_object* to=dynamic_cast<const sca_util::sca_traceable_object*>(scif);
+	if(to==NULL) return empty_string;
+
+	return to->get_trace_value();
+}
+
+/** redirect interactive debug methods to connected signal */
+bool sca_port_base::force_value(const std::string& val)
+{
+	sc_core::sc_interface* scif=this->sc_get_interface();
+	sca_util::sca_traceable_object* to=dynamic_cast<sca_util::sca_traceable_object*>(scif);
+	if(to==NULL) return false;
+
+	return to->force_value(val);
+}
+
+/** redirect interactive debug methods to connected signal */
+void sca_port_base::release_value()
+{
+	sc_core::sc_interface* scif=this->sc_get_interface();
+	sca_util::sca_traceable_object* to=dynamic_cast<sca_util::sca_traceable_object*>(scif);
+	if(to==NULL) return;
+
+	return to->release_value();
+}
+
+/** redirect interactive debug methods to connected signal */
+bool sca_port_base::register_trace_callback(sca_trace_callback cb,void* arg)
+{
+	sc_core::sc_interface* scif=this->sc_get_interface();
+	sca_util::sca_traceable_object* to=dynamic_cast<sca_util::sca_traceable_object*>(scif);
+	if(to==NULL) return false;
+
+	return to->register_trace_callback(cb,arg);
+}
+
+/** redirect interactive debug methods to connected signal */
+bool sca_port_base::register_trace_callback(callback_functor_base& func)
+{
+	sc_core::sc_interface* scif=this->sc_get_interface();
+	sca_util::sca_traceable_object* to=dynamic_cast<sca_util::sca_traceable_object*>(scif);
+	if(to==NULL) return false;
+
+	return to->register_trace_callback(func);
+}
+
+/** redirect interactive debug methods to connected signal */
+bool sca_port_base::remove_trace_callback(callback_functor_base& func)
+{
+	sc_core::sc_interface* scif=this->sc_get_interface();
+	sca_util::sca_traceable_object* to=dynamic_cast<sca_util::sca_traceable_object*>(scif);
+	if(to==NULL) return false;
+
+	return to->remove_trace_callback(func);
+}
+
 
 
 }//namespace sca_implementation

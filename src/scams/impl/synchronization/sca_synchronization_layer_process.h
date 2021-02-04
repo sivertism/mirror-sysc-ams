@@ -27,7 +27,7 @@
   Created on: 26.08.2009
 
    SVN Version       :  $Revision: 1758 $
-   SVN last checkin  :  $Date: 2014-05-27 10:07:30 +0200 (Tue, 27 May 2014) $
+   SVN last checkin  :  $Date: 2014-05-27 08:07:30 +0000 (Tue, 27 May 2014) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_synchronization_layer_process.h 1758 2014-05-27 08:07:30Z karsten $
 

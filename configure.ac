@@ -27,20 +27,20 @@
 ##
 ## --------------------------------------------------------------------------
 ##
-##   SVN Version       :  $Revision: 1981 $
-##   SVN last checkin  :  $Date: 2016-04-04 10:16:09 +0200 (Mon, 04 Apr 2016) $
-##   SVN checkin by    :  $Author: karsten $
-##   SVN Id            :  $Id: configure.ac 1981 2016-04-04 08:16:09Z karsten $
+##   SVN Version       :  $Revision: 2138 $
+##   SVN last checkin  :  $Date: 2020-04-03 13:28:16 +0000 (Fri, 03 Apr 2020) $
+##   SVN checkin by    :  $Author: voertler $
+##   SVN Id            :  $Id: configure.ac 2138 2020-04-03 13:28:16Z voertler $
 ##
 ## --------------------------------------------------------------------------
-
+ 
 AC_PREREQ(2.61)
 
 AC_INIT([SystemC AMS],
-        [2.1],
-        [http://www.coseda-tech.com],
+        [2.3],
+        [https://www.coseda-tech.com],
         [systemc-ams],
-        [http://www.coseda-tech.com],
+        [https://www.coseda-tech.com],
 )
 
 AC_CONFIG_AUX_DIR([config])
@@ -51,8 +51,8 @@ AC_CONFIG_HEADERS([src/config.h])
 AC_DEFINE_UNQUOTED(CONFIGURE_DATE, "`sh -c date`", [Date of configure])
 AC_SUBST(CONFIGURE_DATE)
 
-REVISION="\$Revision: 1981 $"
-AC_REVISION($Revision: 1981 $)
+REVISION="\$Revision: 2138 $"
+AC_REVISION($Revision: 2138 $)
 AC_DEFINE_UNQUOTED(REVISION, "$REVISION", [SVN Revision])
 AC_SUBST(REVISION)
 
@@ -455,6 +455,32 @@ CXXFLAGS="${EXTRA_CXXFLAGS} ${CXXFLAGS}"
 AC_PROG_LIBTOOL
 # * restore CXXFLAGS
 CXXFLAGS="${stored_CXXFLAGS}"
+
+#check SystemC Version by building an example program
+AC_ARG_ENABLE([systemc_compile_check],
+    AS_HELP_STRING([--disable-systemc_compile_check], [Disable SystemC compile option check, which tests that SystemC AMS is configured with compatible compile options]))
+
+AS_IF([test "x$enable_systemc_compile_check" != "xno"], [
+  stored_CXXFLAGS="${CXXFLAGS}"
+  stored_LIBS="${LIBS}"
+  CXXFLAGS="${SYSTEMC_CFLAGS} ${CXXFLAGS}"
+  LIBS="${LIBS} ${SYSTEMC_LIBS}"
+  AC_MSG_CHECKING( whether SystemC executable can be built)
+  AC_RUN_IFELSE( 
+      [AC_LANG_SOURCE([[#include <systemc>
+      int sc_main(int argc, char* argv[]) {
+      return 0;
+      }
+      ]])]
+      ,  
+      [AC_MSG_RESULT([SystemC executable successfully built])],
+      [AC_MSG_FAILURE([SystemC executable cannot be built. Used CXXFLAGS: ${CXXFLAGS} Used LIBS: ${LIBS} . This check can be disabled with --disable-systemc_compile_check])]
+      )
+  CXXFLAGS="${stored_CXXFLAGS}"
+  LIBS="${stored_LIBS}"
+])
+
+
 
 
 AC_OUTPUT( Makefile

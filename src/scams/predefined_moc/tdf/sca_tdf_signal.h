@@ -26,10 +26,10 @@
 
  Created on: 04.03.2009
 
- SVN Version       :  $Revision: 1846 $
- SVN last checkin  :  $Date: 2015-11-16 16:57:24 +0100 (Mon, 16 Nov 2015) $ (UTC)
+ SVN Version       :  $Revision: 2132 $
+ SVN last checkin  :  $Date: 2020-03-27 13:40:11 +0000 (Fri, 27 Mar 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_signal.h 1846 2015-11-16 15:57:24Z karsten $
+ SVN Id            :  $Id: sca_tdf_signal.h 2132 2020-03-27 13:40:11Z karsten $
 
  *****************************************************************************/
 /*
@@ -63,12 +63,28 @@ public:
 
 	virtual ~sca_signal(){}
 
+	virtual void print( std::ostream& = std::cout ) const;
+	virtual void dump( std::ostream& = std::cout ) const;
+
 private:
 	// Disabled
 	sca_signal(const sca_tdf::sca_signal<T>&);
 };
 
 // begin implementation specific
+
+template<class T>
+inline void sca_signal<T>::print( std::ostream& str) const
+{
+	str << this->get_typed_trace_value();
+}
+
+template<class T>
+inline void sca_signal<T>::dump( std::ostream&  str) const
+{
+	str << this->kind() << " : " << this->name() << " value: "<< this->get_typed_trace_value();
+}
+
 
 template<class T>
 inline sca_signal<T>::sca_signal() : sca_tdf::sca_implementation::sca_tdf_signal_impl<T>(sc_core::sc_gen_unique_name("sca_tdf_signal"))

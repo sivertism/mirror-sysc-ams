@@ -28,10 +28,10 @@
 
   Created on: 12.12.2009
 
-   SVN Version       :  $Revision: 1907 $
-   SVN last checkin  :  $Date: 2016-02-13 20:18:55 +0100 (Sat, 13 Feb 2016) $
+   SVN Version       :  $Revision: 2106 $
+   SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_tdf_trace_variable_base.cpp 1907 2016-02-13 19:18:55Z karsten $
+   SVN Id            :  $Id: sca_tdf_trace_variable_base.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 
@@ -79,6 +79,8 @@ sca_trace_variable_base::sca_trace_variable_base(const char* nm) :
 
     scheduled_force_value_flag=false;
     force_value_flag=false;
+
+    callback_registered=false;
 }
 
 bool sca_trace_variable_base::initialize()
@@ -102,8 +104,6 @@ bool sca_trace_variable_base::initialize()
 ////////////////////////////////////////////////////////////////////////////
 bool sca_trace_variable_base::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-	data.type="-";
-	data.unit="-";
 	//trace will be activated after every complete cluster calculation
 	//by the synchronization layer
 
@@ -159,7 +159,7 @@ long sca_trace_variable_base::get_write_index(unsigned long sample_id)
 	write_flags[index] = true;
 	time_buffer[index]=get_trace_time(sample_id);
 
-	if(this->trace_cb_ptr!=NULL)
+	if(this->callback_registered)
 	{
 		sc_core::sc_time ctime=sc_core::sc_time_stamp();
 		if(ctime<=time_buffer[index])
@@ -283,10 +283,13 @@ void sca_trace_variable_base::trace_callback()
 	{
 		this->trace_cb_ptr(this->trace_cb_arg);
 	}
-	else
+
+
+	for(unsigned long i=0;i<this->callbacks.size();++i)
 	{
-		return; //no callback
+		(*(this->callbacks[i]))();
 	}
+
 
 	this->trace_callback_pos++;
 	if(trace_callback_pos>=long(time_buffer.size()))
@@ -310,17 +313,61 @@ void sca_trace_variable_base::trace_callback()
 
 bool sca_trace_variable_base::register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback cb,void* cb_arg)
 {
-	sc_core::sc_spawn_options opt;
-	opt.spawn_method();
-
 	this->trace_cb_ptr=cb;
 	this->trace_cb_arg=cb_arg;
 
+	if(!this->callback_registered)
+	{
+		sc_core::sc_spawn_options opt;
+		opt.spawn_method();
 
-	sc_core::sc_spawn(sc_bind(&sca_trace_variable_base::trace_callback,this),
-			sc_core::sc_gen_unique_name("trace_callback"),&opt);
+		sc_core::sc_spawn(sc_bind(&sca_trace_variable_base::trace_callback,this),
+				sc_core::sc_gen_unique_name("trace_callback"),&opt);
+
+
+		this->callback_registered=true;
+	}
 
 	return true;
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool sca_trace_variable_base::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	this->callbacks.push_back(&func);
+
+	if(!this->callback_registered)
+	{
+		sc_core::sc_spawn_options opt;
+		opt.spawn_method();
+
+		sc_core::sc_spawn(sc_bind(&sca_trace_variable_base::trace_callback,this),
+				sc_core::sc_gen_unique_name("trace_callback"),&opt);
+
+		this->callback_registered=true;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool sca_trace_variable_base::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	for(std::vector<sca_util::sca_traceable_object::callback_functor_base*>::iterator
+			it=this->callbacks.begin();it!=this->callbacks.end();++it)
+	{
+		if(*it == &func)
+		{
+			this->callbacks.erase(it);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -426,6 +473,39 @@ void sca_trace_variable_base::release_value()
 		}
 	}
 }
+
+
+
+void sca_trace_variable_base::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_trace_variable_base::get_unit() const
+{
+	return unit;
+}
+
+void sca_trace_variable_base::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_trace_variable_base::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_trace_variable_base::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_trace_variable_base::get_domain() const
+{
+	return domain;
+}
+
 
 } //namespace sca_implementation
 } //namespace sca_tdf

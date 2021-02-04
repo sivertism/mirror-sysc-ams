@@ -91,10 +91,20 @@ public:
     //we can change the traceable object in solver data
     //we can call this function from add_solver_trace
     //with an id
-    virtual void trace_init(sca_util::sca_traceable_object*,int id);
+    //returns true if succesful
+    virtual bool trace_init(sca_util::sca_traceable_object*,int id);
+
+
+    sca_util::sca_implementation::sca_trace_object_data& get_trace_obj_data(int id);
 
     //this function will be called by the solver to send a value to the trace file
-    void trace_from_user_solver(sca_core::sca_time,double value,int id);
+    template<class T>
+    void trace_from_user_solver(const sca_core::sca_time& ctime,const T& value,int user_solver_trace_id)
+    {
+    	sca_util::sca_implementation::sca_trace_object_data& data=get_trace_obj_data(user_solver_trace_id);
+    	data.trace_buffer->store_time_stamp(data.id, ctime, value);
+    	data.set_written_flag();
+    }
 
     void send_trace_to_file();
 

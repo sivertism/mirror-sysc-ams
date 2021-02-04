@@ -3,7 +3,7 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-	Copyright 2015-2016
+	Copyright 2015-2020
 	COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 10.11.2009
 
- SVN Version       :  $Revision: 1973 $
- SVN last checkin  :  $Date: 2016-03-24 16:46:07 +0100 (Thu, 24 Mar 2016) $
+ SVN Version       :  $Revision: 2127 $
+ SVN last checkin  :  $Date: 2020-03-23 13:09:32 +0000 (Mon, 23 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_eln_node.cpp 1973 2016-03-24 15:46:07Z karsten $
+ SVN Id            :  $Id: sca_eln_node.cpp 2127 2020-03-23 13:09:32Z karsten $
 
  *****************************************************************************/
 
@@ -49,11 +49,24 @@ namespace sca_eln
 
 static const double ZERO_VALUE=0.0;
 
+void sca_node::print( std::ostream& str) const
+{
+	str << this->get_typed_trace_value();
+}
+
+void sca_node::dump( std::ostream&  str) const
+{
+	str << this->kind() << " : " << this->name() << " value: "<< this->get_typed_trace_value();
+}
 
 
 sca_node::sca_node() :
 	sca_conservative_signal(sc_core::sc_gen_unique_name("sca_eln_node"))
 {
+	unit="V";
+	unit_prefix="";
+	domain="V";
+
 	connected_eln_module=NULL;
 
 	reference_node = false;
@@ -64,6 +77,10 @@ sca_node::sca_node() :
 sca_node::sca_node(const char* name_) :
 	sca_conservative_signal(name_)
 {
+	unit="V";
+	unit_prefix="";
+	domain="V";
+
 	connected_eln_module=NULL;
 
 	reference_node = false;
@@ -124,17 +141,13 @@ sca_node::sca_node(const sca_eln::sca_node&)
 bool sca_node::trace_init(
 		sca_util::sca_implementation::sca_trace_object_data& data)
 {
-	data.type = "Voltage";
-	data.unit = "V";
-
 	//initialize connected eln module pointer
 	this->get_connected_eln_module();
 
 
 	if (connected_eln_module != NULL)
 	{
-		connected_eln_module->get_sync_domain()->add_solver_trace(data);
-		return true;
+		return connected_eln_module->get_sync_domain()->add_solver_trace(data);
 	}
 
 	return false;
@@ -231,6 +244,63 @@ bool sca_node::register_trace_callback(sca_trace_callback cb,void* cb_arg)
 
 	return true;
 
+}
+
+
+bool sca_node::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(trd==NULL)
+	{
+		trd=new sca_core::sca_implementation::sca_con_interactive_trace_data(this);
+	}
+
+
+	trd->register_trace_callback(func);
+
+	return true;
+}
+
+
+bool sca_node::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(trd==NULL)
+	{
+		return false;
+	}
+
+
+	return trd->remove_trace_callback(func);
+}
+
+
+void sca_node::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_node::get_unit() const
+{
+	return unit;
+}
+
+void sca_node::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_node::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_node::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_node::get_domain() const
+{
+	return domain;
 }
 
 

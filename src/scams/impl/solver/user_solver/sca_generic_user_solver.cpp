@@ -124,21 +124,29 @@ void sca_generic_user_solver::set_solver_parameter(
 
 
 
-void sca_generic_user_solver::add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj)
+bool sca_generic_user_solver::add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj)
 {
-	user_solver->trace_init(tr_obj.trace_object,static_cast<int>(trace_objects.size()));
-	sca_core::sca_implementation::sca_solver_base::add_solver_trace(tr_obj);
-
 	trace_objects.push_back(&tr_obj);
+
+	if(!user_solver->trace_init(tr_obj.trace_object,static_cast<int>(trace_objects.size()-1)))
+	{
+		trace_objects.pop_back();
+		return false;
+	}
+
+	if(!sca_core::sca_implementation::sca_solver_base::add_solver_trace(tr_obj))
+	{
+		trace_objects.pop_back();
+		return false;
+	}
+
+	return true;
 }
 
-void sca_generic_user_solver::trace(sca_core::sca_time ttime,double value,int id)
+sca_util::sca_implementation::sca_trace_object_data& sca_generic_user_solver::get_trace_obj_data(int id)
 {
-	sca_util::sca_implementation::sca_trace_object_data& tr_obj(*trace_objects[id]);
-	tr_obj.trace_buffer->store_time_stamp(tr_obj.id,ttime,value);
-	tr_obj.set_written_flag();
+	return *trace_objects[id];
 }
-
 
 void sca_generic_user_solver::trace( sc_core::sc_trace_file* tf ) const
 {

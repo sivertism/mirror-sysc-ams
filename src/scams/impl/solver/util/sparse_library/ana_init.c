@@ -3,6 +3,8 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,14 +24,14 @@
 
  ana_init.c - description
 
- Original Author: Karsten Einwich Fraunhofer IIS/EAS Dresden
+ Original Author: Karsten Einwich COSEDA Technologies GmbH
 
  Created on: 22.10.2009
 
- SVN Version       :  $Revision: 1725 $
- SVN last checkin  :  $Date: 2014-05-15 13:18:51 +0200 (Thu, 15 May 2014) $
+ SVN Version       :  $Revision: 2101 $
+ SVN last checkin  :  $Date: 2020-02-21 12:16:08 +0000 (Fri, 21 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: ana_init.c 1725 2014-05-15 11:18:51Z karsten $
+ SVN Id            :  $Id: ana_init.c 2101 2020-02-21 12:16:08Z karsten $
 
  *****************************************************************************/
 
@@ -122,6 +124,8 @@ int ana_init_sparse (
 		sdata->code_trapez=NULL;
 		sdata->algorithm=TRAPEZ;
 		sdata->cur_algorithm=EULER;
+		sdata->reinit_cnt=0;
+		sdata->reinit_steps=0;
 
 		*sdatap=sdata;
 		sdata->size=0;
@@ -146,23 +150,35 @@ int ana_init_sparse (
 		MA_FreeSparse(sdata->sZ_trapez);
 		MA_FreeSparse(sdata->sW_trapez);
 
-		free(sdata->xp);
-		free(sdata->x_last);
-		free(sdata->r1);
-		free(sdata->r2);
-		free(sdata->A);
-		free(sdata->sZ_euler);
-		free(sdata->sW_euler);
-		free(sdata->code_euler);
-		free(sdata->sZ_trapez);
-		free(sdata->sW_trapez);
-		free(sdata->code_trapez);
+		if(sdata->xp!=NULL)       free(sdata->xp);
+		if(sdata->x_last!=NULL)   free(sdata->x_last);
+		if(sdata->r1!=NULL)       free(sdata->r1);
+		if(sdata->r2!=NULL)       free(sdata->r2);
+		if(sdata->A!=NULL)        free(sdata->A);
+		if(sdata->sZ_euler!=NULL) free(sdata->sZ_euler);
+		if(sdata->sW_euler!=NULL) free(sdata->sW_euler);
+		if(sdata->code_euler!=NULL) free(sdata->code_euler);
+
+
+		if(sdata->sZ_trapez!=NULL)    free(sdata->sZ_trapez);
+		if(sdata->sW_trapez!=NULL)    free(sdata->sW_trapez);
+		if(sdata->code_trapez!=NULL)  free(sdata->code_trapez);
+
+		sdata->xp=NULL;
+		sdata->x_last=NULL;
+		sdata->r1=NULL;
+		sdata->r2=NULL;
+		sdata->A=NULL;
+		sdata->sZ_euler=NULL;
+		sdata->sW_euler=NULL;
+		sdata->code_euler=NULL;
+		sdata->sZ_trapez=NULL;
+		sdata->sW_trapez=NULL;
+		sdata->code_trapez=NULL;
+		sdata->size=0;
 	}
 
 	sdata->h     = h;
-	sdata->h_temp = h;
-	sdata->h_diff = 0.0;
-	sdata->variable_step_size = 0;
 	sdata->size  = size;
 
 	if(force_init)
@@ -180,8 +196,11 @@ int ana_init_sparse (
 	}
 
 	if(reinit<2)
+	{
 		sdata->cur_algorithm=EULER;   /* start/restart with Euler backward method */
 	                              /* if only h changes keep last method*/
+		sdata->reinit_cnt=sdata->reinit_steps;
+	}
 
 	/**** initialization for Euler backward method ******/
 
@@ -238,46 +257,51 @@ int ana_init_sparse (
 
 	/*** initialization for trapezoidal method *******/
 
-	if(force_init)
+	if(sdata->algorithm==TRAPEZ)
 	{
-		sdata->sZ_trapez  =
+
+		if(force_init)
+		{
+			sdata->sZ_trapez  =
 				(struct sparse*)calloc(1,(unsigned)sizeof(struct sparse));
-		sdata->sW_trapez  =
+			sdata->sW_trapez  =
 				(struct sparse*)calloc(1,(unsigned)sizeof(struct sparse));
-		sdata->code_trapez =
+			sdata->code_trapez =
 				(struct spcode*)calloc(1,(unsigned)sizeof(struct spcode));
 
-		if (sdata->sZ_trapez == NULL || sdata->sW_trapez == NULL
-				|| sdata->code_trapez == NULL)
-			return 2;
+			if (sdata->sZ_trapez == NULL || sdata->sW_trapez == NULL
+					|| sdata->code_trapez == NULL)
+				return 2;
 
-		MA_InitSparse(sdata->sZ_trapez);
-		MA_InitSparse(sdata->sW_trapez);
-		MA_InitCode(sdata->code_trapez);
-	}
-
-	hinv = 2.0/h;
-
-	err = MA_GenerateProductValueSparse(sdata->sW_trapez, sA, hinv);
-	if (err)
-		return err;
-
-	err = MA_GenerateSumMatrixWeighted(sdata->sZ_trapez, 1.0,
-			sdata->sW_trapez, 1.0, sB);
-	if (err)
-		return err;
-
-	err = MA_LequSparseCodegen(sdata->sZ_trapez,sdata->code_trapez);
-	if(err)
-	{
-		if(sdata->code_trapez!=NULL)
-		{
-			sdata->critical_column=sdata->code_trapez->critical_column;
-			sdata->critical_row=sdata->code_trapez->critical_line;
+			MA_InitSparse(sdata->sZ_trapez);
+			MA_InitSparse(sdata->sW_trapez);
+			MA_InitCode(sdata->code_trapez);
 		}
 
-		return(err);
-	}
+		hinv = 2.0/h;
+
+		err = MA_GenerateProductValueSparse(sdata->sW_trapez, sA, hinv);
+		if (err)
+			return err;
+
+		err = MA_GenerateSumMatrixWeighted(sdata->sZ_trapez, 1.0,
+				sdata->sW_trapez, 1.0, sB);
+		if (err)
+			return err;
+
+		err = MA_LequSparseCodegen(sdata->sZ_trapez,sdata->code_trapez);
+		if(err)
+		{
+			if(sdata->code_trapez!=NULL)
+			{
+				sdata->critical_column=sdata->code_trapez->critical_column;
+				sdata->critical_row=sdata->code_trapez->critical_line;
+			}
+
+			return(err);
+		}
+
+	} /*if(sdata->algorithm==TRAPEZ)*/
 
 	return(0);
 }

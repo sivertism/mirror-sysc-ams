@@ -28,10 +28,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1944 $
-   SVN last checkin  :  $Date: 2016-03-11 14:28:43 +0100 (Fri, 11 Mar 2016) $
+   SVN Version       :  $Revision: 2048 $
+   SVN last checkin  :  $Date: 2017-09-20 15:24:12 +0000 (Wed, 20 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_domain_solver.h 1944 2016-03-11 13:28:43Z karsten $
+   SVN Id            :  $Id: sca_ac_domain_solver.h 2048 2017-09-20 15:24:12Z karsten $
 
  *****************************************************************************/
 
@@ -83,6 +83,14 @@ public:
 private:
 
     void init_systemc();
+
+
+    std::vector<sca_core::sca_implementation::sca_solver_base*> to_reg_ac_solver;
+
+    void ac_elaborate();
+    void register_ac_entities(sc_core::sc_object* obj);
+    void hierarchic_disable_eln_lsf_solver(sc_core::sc_object* obj);
+
     void trace_init();
     void trace_init_noise(sca_util::sca_vector<std::string>& src_names);
     void trace(double w, sca_util::sca_vector<sca_util::sca_complex >& result);

@@ -4,6 +4,9 @@
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
@@ -22,14 +25,14 @@
 
   sca_matrix_base.h - description
 
-  Original Author: Karsten Einwich Fraunhofer IIS/EAS Dresden
+  Original Author: Karsten Einwich COSEDA Technologies GmbH
 
   Created on: 09.10.2009
 
-   SVN Version       :  $Revision: 1920 $
-   SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+   SVN Version       :  $Revision: 2109 $
+   SVN last checkin  :  $Date: 2020-03-03 14:22:27 +0000 (Tue, 03 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_matrix_base_typeless.cpp 1920 2016-02-25 12:43:37Z karsten $
+   SVN Id            :  $Id: sca_matrix_base_typeless.cpp 2109 2020-03-03 14:22:27Z karsten $
 
  *****************************************************************************/
 

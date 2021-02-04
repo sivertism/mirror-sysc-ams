@@ -27,7 +27,7 @@
   Created on: Feb 20, 2010
 
    SVN Version       :  $Revision: 1886 $
-   SVN last checkin  :  $Date: 2016-01-08 15:25:12 +0100 (Fri, 08 Jan 2016) $
+   SVN last checkin  :  $Date: 2016-01-08 14:25:12 +0000 (Fri, 08 Jan 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_ct_delay_buffer.h 1886 2016-01-08 14:25:12Z karsten $
 

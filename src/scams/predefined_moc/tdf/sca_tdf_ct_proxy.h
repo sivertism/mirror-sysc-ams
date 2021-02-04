@@ -27,7 +27,7 @@
  Created on: 04.03.2009
 
  SVN Version       :  $Revision: 1908 $
- SVN last checkin  :  $Date: 2016-02-15 18:59:13 +0100 (Mon, 15 Feb 2016) $ (UTC)
+ SVN last checkin  :  $Date: 2016-02-15 17:59:13 +0000 (Mon, 15 Feb 2016) $ (UTC)
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_tdf_ct_proxy.h 1908 2016-02-15 17:59:13Z karsten $
 

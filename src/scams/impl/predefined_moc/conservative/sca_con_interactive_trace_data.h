@@ -53,6 +53,8 @@ public:
 	const double& get_value();
 
 	void register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback cb,void* cb_arg);
+	void register_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+	bool remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
 
 	sca_con_interactive_trace_data(const sca_core::sca_implementation::sca_conservative_signal* cnode);
 	sca_con_interactive_trace_data(const sca_core::sca_implementation::sca_conservative_module* mod);
@@ -82,6 +84,9 @@ private:
 	sca_util::sca_traceable_object::sca_trace_callback  trace_cb_ptr;
 	void*               trace_cb_arg;
 
+
+	std::vector<sca_util::sca_traceable_object::callback_functor_base*> callbacks;
+	bool callback_registered;
 
 	sca_core::sca_implementation::sca_conservative_module* module;
 

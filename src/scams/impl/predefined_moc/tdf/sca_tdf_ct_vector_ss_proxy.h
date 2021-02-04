@@ -27,7 +27,7 @@
  Created on: 27.12.2009
 
  SVN Version       :  $Revision: 1593 $
- SVN last checkin  :  $Date: 2013-05-28 23:41:19 +0200 (Tue, 28 May 2013) $
+ SVN last checkin  :  $Date: 2013-05-28 21:41:19 +0000 (Tue, 28 May 2013) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_tdf_ct_vector_ss_proxy.h 1593 2013-05-28 21:41:19Z karsten $
 

@@ -3,7 +3,7 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
   Created on: 05.01.2010
 
-   SVN Version       :  $Revision: 1973 $
-   SVN last checkin  :  $Date: 2016-03-24 16:46:07 +0100 (Thu, 24 Mar 2016) $
+   SVN Version       :  $Revision: 2127 $
+   SVN last checkin  :  $Date: 2020-03-23 13:09:32 +0000 (Mon, 23 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_lsf_signal.cpp 1973 2016-03-24 15:46:07Z karsten $
+   SVN Id            :  $Id: sca_lsf_signal.cpp 2127 2020-03-23 13:09:32Z karsten $
 
  *****************************************************************************/
 
@@ -49,6 +49,19 @@ namespace sca_lsf
 {
 
 static const double ZERO_VALUE=0.0;
+
+
+void sca_signal::print( std::ostream& str) const
+{
+	str << this->get_typed_trace_value();
+}
+
+
+void sca_signal::dump( std::ostream&  str) const
+{
+	str << this->kind() << " : " << this->name() << " value: "<< this->get_typed_trace_value();
+}
+
 
 sca_signal::sca_signal() :
 	sca_conservative_signal(sc_core::sc_gen_unique_name("sca_lsf_signal"))
@@ -120,9 +133,6 @@ sca_signal::sca_signal(const sca_lsf::sca_signal&)
 bool sca_signal::trace_init(
 		sca_util::sca_implementation::sca_trace_object_data& data)
 {
-	data.type = "-";
-	data.unit = "-";
-
 	unsigned long nmodules = get_number_of_connected_modules();
 	std::vector<sca_core::sca_module*>& modules = get_connected_module_list();
 
@@ -131,8 +141,7 @@ bool sca_signal::trace_init(
 		lsf_module = dynamic_cast<sca_lsf::sca_module*> (modules[i]);
 		if (lsf_module != NULL)
 		{
-			lsf_module->get_sync_domain()->add_solver_trace(data);
-			return true;
+			return lsf_module->get_sync_domain()->add_solver_trace(data);
 		}
 	}
 	return false;
@@ -221,5 +230,60 @@ bool sca_signal::register_trace_callback(sca_trace_callback cb,void* cb_arg)
 
 }
 
+
+bool sca_signal::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(trd==NULL)
+	{
+		trd=new sca_core::sca_implementation::sca_con_interactive_trace_data(this);
+	}
+
+
+	trd->register_trace_callback(func);
+
+	return true;
+}
+
+
+bool sca_signal::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(trd==NULL)
+	{
+		return false;
+	}
+
+
+	return trd->remove_trace_callback(func);
+}
+
+void sca_signal::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_signal::get_unit() const
+{
+	return unit;
+}
+
+void sca_signal::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_signal::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_signal::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_signal::get_domain() const
+{
+	return domain;
+}
 
 }

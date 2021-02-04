@@ -26,10 +26,10 @@
 
   Created on: 16.11.2009
 
-   SVN Version       :  $Revision: 1265 $
-   SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+   SVN Version       :  $Revision: 2016 $
+   SVN last checkin  :  $Date: 2016-11-25 10:15:05 +0000 (Fri, 25 Nov 2016) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_tabular_trace.h 1265 2011-11-19 20:43:31Z karsten $
+   SVN Id            :  $Id: sca_tabular_trace.h 2016 2016-11-25 10:15:05Z karsten $
 
  *****************************************************************************/
 
@@ -97,6 +97,8 @@ private:
     void construct ();
 
     void write_waves_sampled ();
+
+    void write_domain_unit(sca_util::sca_traceable_object*);
 
     long dec_cnt;
     sca_core::sca_time next_sample_time;

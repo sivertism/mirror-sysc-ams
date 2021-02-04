@@ -3,6 +3,9 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
  Created on: 07.03.2009
 
- SVN Version       :  $Revision: 1265 $
- SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $ (UTC)
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_eln_nullor.h 1265 2011-11-19 20:43:31Z karsten $
+ SVN Id            :  $Id: sca_eln_nullor.h 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 /*

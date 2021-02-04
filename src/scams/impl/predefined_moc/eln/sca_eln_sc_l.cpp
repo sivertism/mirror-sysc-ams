@@ -3,7 +3,7 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1863 $
-   SVN last checkin  :  $Date: 2016-01-05 10:11:33 +0100 (Tue, 05 Jan 2016) $
+   SVN Version       :  $Revision: 2112 $
+   SVN last checkin  :  $Date: 2020-03-12 13:06:46 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_sc_l.cpp 1863 2016-01-05 09:11:33Z karsten $
+   SVN Id            :  $Id: sca_eln_sc_l.cpp 2112 2020-03-12 13:06:46Z karsten $
 
  *****************************************************************************/
 
@@ -56,10 +56,6 @@ namespace sca_de
 sca_l::sca_l(sc_core::sc_module_name, double scale_, double psi0_) :
 p("p"), n("n"), inp("inp"), scale("scale", scale_), psi0("psi0", psi0_), phi0(psi0)
 {
-    through_value_available = true;
-    through_value_type      = "I";
-    through_value_unit      = "A";
-
     curr_value=1.0;
 
     nadd1=-1;
@@ -71,6 +67,9 @@ p("p"), n("n"), inp("inp"), scale("scale", scale_), psi0("psi0", psi0_), phi0(ps
     //IMPROVE: find better solution -> inserts additional port in database
     conv_port=new ::sca_tdf::sca_de::sca_in<double>("converter_port");
     conv_port->bind(inp);
+
+	unit="A";
+	domain="I";
 }
 
 
@@ -209,13 +208,9 @@ void sca_l::post_solve() //set capacitor stamps after first step
 
 bool sca_l::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type=through_value_type;
-    data.unit=through_value_unit;
-
     //trace will be activated after every complete cluster calculation
     //by teh synchronization layer
-    get_sync_domain()->add_solver_trace(data);
-    return true;
+    return get_sync_domain()->add_solver_trace(data);
 }
 
 void sca_l::trace(long id,sca_util::sca_implementation::sca_trace_buffer& buffer)
@@ -281,6 +276,67 @@ bool sca_l::register_trace_callback(sca_trace_callback cb,void* cb_arg)
 	return true;
 
 }
+
+bool sca_l::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		this->trd=new sca_core::sca_implementation::sca_con_interactive_trace_data(this);
+	}
+
+
+	this->trd->register_trace_callback(func);
+
+	return true;
+
+}
+
+
+bool sca_l::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		return false;
+	}
+
+
+	return this->trd->remove_trace_callback(func);
+
+}
+
+/**
+   * experimental physical domain interface
+*/
+void sca_l::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_l::get_unit() const
+{
+	return unit;
+}
+
+void sca_l::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_l::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_l::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_l::get_domain() const
+{
+	return domain;
+}
+
 
 
 } //namespace sca_de

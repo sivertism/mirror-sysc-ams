@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 08.03.2009
 
- SVN Version       :  $Revision: 1892 $
- SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $ (UTC)
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_eln_tdf_rswitch.h 1892 2016-01-10 11:59:12Z karsten $
+ SVN Id            :  $Id: sca_eln_tdf_rswitch.h 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 /*
@@ -66,7 +66,8 @@ namespace sca_tdf
 //    class sca_rswitch : public implementation-derived-from sca_core::sca_module,
 //                        protected sca_util::sca_traceable_object
 class sca_rswitch: public sca_eln::sca_module,
-		           public sca_util::sca_traceable_object
+		           public sca_util::sca_traceable_object,
+		           public sca_core::sca_physical_domain_interface
 {
 public:
 	sca_eln::sca_terminal p;
@@ -99,8 +100,20 @@ public:
 	 * is a new eln result is available
 	 */
 	bool register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback,void*);
+	bool register_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+	bool remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
 
+	/**
+	   * experimental physical domain interface
+	*/
+	virtual void set_unit(const std::string& unit);
+	virtual const std::string& get_unit() const;
 
+	virtual void set_unit_prefix(const std::string& prefix);
+	virtual const std::string& get_unit_prefix() const;
+
+	virtual void set_domain(const std::string& domain);
+	virtual const std::string& get_domain() const;
 
 	//begin implementation specific
 private:
@@ -123,6 +136,10 @@ private:
 	 //sc trace of sc_core::sc_object to prevent clang warning due overloaded
 	 //sca_traceable_object function
 	 void trace( sc_core::sc_trace_file* tf ) const;
+
+	 std::string unit;
+	 std::string unit_prefix;
+	 std::string domain;
 
 	//end implementation specific
 

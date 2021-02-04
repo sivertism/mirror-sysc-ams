@@ -100,6 +100,19 @@ bool sca_change_matrix::get_change(
 
 	if(stamp.cur_val_not_updated)
 	{
+		for(unsigned long i=chidx+1;i<n_stamps;++i) //solves problem wit doubled stamps
+		{
+			if(stamp.value_ref==changed_stamps[i].value_ref) //remove doubled entries (use first)
+			{
+				for(unsigned long j=i+1;j<n_stamps;++j)
+				{
+					changed_stamps[j-1]=changed_stamps[j];
+				}
+				n_stamps--;
+				i--;
+			}
+		}
+
 		stamp.cur_value=*(stamp.value_ref);
 		stamp.cur_val_not_updated=false;
 	}

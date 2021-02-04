@@ -26,10 +26,10 @@
 
  Created on: 16.11.2009
 
- SVN Version       :  $Revision: 1914 $
- SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tabular_trace.cpp 1914 2016-02-23 18:06:06Z karsten $
+ SVN Id            :  $Id: sca_tabular_trace.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 
@@ -99,6 +99,44 @@ sca_tabular_trace::sca_tabular_trace(std::ostream& str)
 
 //////////////////////////////////////////////////////////////////////////////
 
+static bool SCA_ENABLE_PHYSICAL_UNIT_TRACING=false;
+void sca_enable_physical_unit_tracing() {SCA_ENABLE_PHYSICAL_UNIT_TRACING=true;}
+
+
+void sca_tabular_trace::write_domain_unit(sca_util::sca_traceable_object* trace_object)
+{
+	if(!SCA_ENABLE_PHYSICAL_UNIT_TRACING) return;
+
+	sca_core::sca_physical_domain_interface* phd=
+			dynamic_cast<sca_core::sca_physical_domain_interface*>(trace_object);
+
+	if (phd != NULL)
+	{
+		if (phd->get_domain() != "")
+		{
+			(*outstr) << "[" << phd->get_domain();
+			if (phd->get_unit() != "")
+			{
+				(*outstr) << "(" << phd->get_unit_prefix();
+				(*outstr) << phd->get_unit() << ")";
+			}
+			(*outstr) << "]";
+		}
+		else
+		{
+			if (phd->get_unit() != "")
+			{
+				(*outstr) << "(" << phd->get_unit_prefix();
+				(*outstr) << phd->get_unit() << ")";
+			}
+		}
+	}
+
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+
 void sca_tabular_trace::write_header()
 {
 	outstr->precision(12);
@@ -106,29 +144,19 @@ void sca_tabular_trace::write_header()
 	for (std::vector<sca_trace_object_data>::iterator it = traces.begin(); it
 			!= traces.end(); it++)
 	{
-		(*outstr) << " " << (*it).name;
-
-		if (it->trace_object != NULL)
+		if(it->get_type_info().type_id==sca_type_explorer_base::SCA_COMPLEX)
 		{
-			if (it->trace_object->get_domain() != "")
-			{
-				(*outstr) << "[" << it->trace_object->get_domain();
-				if (it->trace_object->get_unit() != "")
-				{
-					(*outstr) << "(" << it->trace_object->get_unit_prefix();
-					(*outstr) << it->trace_object->get_unit() << ")";
-				}
-				(*outstr) << "]";
-			}
-			else
-			{
-				if (it->trace_object->get_unit() != "")
-				{
-					(*outstr) << "(" << it->trace_object->get_unit_prefix();
-					(*outstr) << it->trace_object->get_unit() << ")";
-				}
-			}
+			(*outstr) << " " << (*it).name << ".real";
+			write_domain_unit(it->trace_object);
+			(*outstr) << " " << (*it).name << ".imag";
+			write_domain_unit(it->trace_object);
 		}
+		else
+		{
+			(*outstr) << " " << (*it).name;
+			write_domain_unit(it->trace_object);
+		}
+
 	}
 	(*outstr) << std::endl;
 }
@@ -188,7 +216,14 @@ void sca_tabular_trace::write_waves()
 			{
 				if (no_interpolation)
 				{
-					(*outstr) << '*';
+					if(this->traces[i].get_type_info().type_id==sca_type_explorer_base::SCA_COMPLEX)
+					{
+						(*outstr) << "* *";
+					}
+					else
+					{
+						(*outstr) << '*';
+					}
 				}
 				else
 				{

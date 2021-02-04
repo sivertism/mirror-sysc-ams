@@ -27,7 +27,7 @@
   Created on: 13.11.2009
 
    SVN Version       :  $Revision: 1671 $
-   SVN last checkin  :  $Date: 2014-02-08 11:43:30 +0100 (Sat, 08 Feb 2014) $
+   SVN last checkin  :  $Date: 2014-02-08 10:43:30 +0000 (Sat, 08 Feb 2014) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_trace_value_handler.cpp 1671 2014-02-08 10:43:30Z karsten $
 

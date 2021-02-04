@@ -26,10 +26,10 @@
 
  Created on: 08.03.2009
 
- SVN Version       :  $Revision: 1911 $
- SVN last checkin  :  $Date: 2016-02-16 14:51:22 +0100 (Tue, 16 Feb 2016) $
+ SVN Version       :  $Revision: 2046 $
+ SVN last checkin  :  $Date: 2017-09-20 12:41:42 +0000 (Wed, 20 Sep 2017) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_ac_functions.h 1911 2016-02-16 13:51:22Z karsten $
+ SVN Id            :  $Id: sca_ac_functions.h 2046 2017-09-20 12:41:42Z karsten $
 
  *****************************************************************************/
 /*
@@ -138,12 +138,24 @@ template<class T>
 const sca_util::sca_complex& sca_ac(const sca_tdf::sca_in<T>&);
 
 template<class T>
+sca_util::sca_complex& sca_ac(const sc_core::sc_out<T>&);
+
+template<class T>
+const sca_util::sca_complex& sca_ac(const sc_core::sc_in<T>&);
+
+template<class T>
+const sca_util::sca_complex& sca_ac(const sca_tdf::sca_in<T>&);
+
+template<class T>
 sca_util::sca_complex& sca_ac(const sca_tdf::sca_out_base<T>&);
 
 
 
 template<class T>
 sca_util::sca_complex& sca_ac_noise(const sca_tdf::sca_out_base<T>&);
+
+template<class T>
+sca_util::sca_complex& sca_ac_noise(const sc_core::sc_out<T>&);
 
 
 
@@ -238,6 +250,13 @@ inline sca_util::sca_complex& sca_ac(const sca_tdf::sca_out_base<T>& port)
 	return sca_implementation::sca_ac(port);
 }
 
+
+template<class T>
+inline sca_util::sca_complex& sca_ac(const sc_core::sc_out<T>& port)
+{
+	return sca_implementation::sca_ac(port);
+}
+
 //LRM clause 5.2.2.2.
 template<class T>
 inline sca_util::sca_complex& sca_ac_noise(const sca_tdf::sca_out_base<T>& port)
@@ -245,8 +264,24 @@ inline sca_util::sca_complex& sca_ac_noise(const sca_tdf::sca_out_base<T>& port)
 	return sca_implementation::sca_ac_noise(port);
 }
 
+
+template<class T>
+inline sca_util::sca_complex& sca_ac_noise(const sc_core::sc_out<T>& port)
+{
+	return sca_implementation::sca_ac_noise(port);
+}
+
+
+
 template<class T>
 inline const sca_util::sca_complex& sca_ac(const sca_tdf::sca_in<T>& port)
+{
+	return sca_implementation::sca_ac(port);
+}
+
+
+template<class T>
+inline const sca_util::sca_complex& sca_ac(const sc_core::sc_in<T>& port)
 {
 	return sca_implementation::sca_ac(port);
 }

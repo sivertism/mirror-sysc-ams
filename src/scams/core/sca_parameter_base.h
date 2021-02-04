@@ -26,10 +26,10 @@
 
  Created on: 03.03.2009
 
- SVN Version       :  $Revision: 1914 $
- SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $ (UTC)
+ SVN Version       :  $Revision: 2127 $
+ SVN last checkin  :  $Date: 2020-03-23 13:09:32 +0000 (Mon, 23 Mar 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_parameter_base.h 1914 2016-02-23 18:06:06Z karsten $
+ SVN Id            :  $Id: sca_parameter_base.h 2127 2020-03-23 13:09:32Z karsten $
 
  *****************************************************************************/
 
@@ -53,7 +53,6 @@ public:
 	virtual const char* kind() const;
 
 	virtual std::string to_string() const = 0;
-	virtual void print(std::ostream& = std::cout) const = 0;
 
 	void lock();
 	void unlock();

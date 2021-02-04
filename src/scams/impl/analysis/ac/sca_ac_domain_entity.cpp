@@ -28,10 +28,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1947 $
-   SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $
+   SVN Version       :  $Revision: 2133 $
+   SVN last checkin  :  $Date: 2020-03-27 14:06:08 +0000 (Fri, 27 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_domain_entity.cpp 1947 2016-03-13 20:11:21Z karsten $
+   SVN Id            :  $Id: sca_ac_domain_entity.cpp 2133 2020-03-27 14:06:08Z karsten $
 
  *****************************************************************************/
 
@@ -77,8 +77,18 @@ sca_ac_domain_entity::sca_ac_domain_entity(sc_core::sc_module* mod) :
         qe( NULL ),
         module( mod ),
         solver( NULL ),
-        obj( mod )
-{}
+        obj( dynamic_cast<sca_ac_analysis::sca_ac_module*>(mod) )
+{
+	//shoulb never happen
+	if(obj==NULL)
+	{
+		std::ostringstream str;
+		str << "Internal Error: Module: ";
+		if(mod!=NULL) str << mod->name();
+		str << " is not derived from sca_ac_module";
+		SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -95,8 +105,18 @@ sca_ac_domain_entity::sca_ac_domain_entity(sca_core::sca_implementation::sca_sol
         qe( NULL ),
         module( NULL ),
         solver( solv ),
-        obj( solv )
-{}
+        obj( dynamic_cast<sca_ac_analysis::sca_ac_object*>(solv) )
+{
+	//shoulb never happen
+	if(obj==NULL)
+	{
+		std::ostringstream str;
+		str << "Internal Error: Solver: ";
+		if(solv!=NULL) str << solv->name();
+		str << " is not derived from sca_ac_object";
+		SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+	}
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,7 +175,7 @@ inline bool sca_ac_domain_entity::call_add_eq_method()
 
 inline void sca_ac_domain_entity::determine_ac_module_ports()
 {
-    sc_core::sc_interface* sca_if;
+    sc_core::sc_interface* sca_if(NULL);
     std::vector<sc_core::sc_object*>&
     childs(const_cast<std::vector<sc_core::sc_object*>&>(module->get_child_objects()));
 
@@ -390,6 +410,9 @@ inline void sca_ac_domain_entity::determine_ac_solver_ports()
 
 void sca_ac_domain_entity::initialize()
 {
+	inport_arcs.resize(0);
+	outport_arcs.resize(0);
+
     //determine ports for modules -> create arc mapping table
     //is performed only if module!=NULL
     if( module!=NULL )

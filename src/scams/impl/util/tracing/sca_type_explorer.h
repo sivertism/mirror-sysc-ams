@@ -26,10 +26,10 @@
 
   Created on: Jan 24, 2010
 
-   SVN Version       :  $Revision: 1920 $
-   SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+   SVN Version       :  $Revision: 2110 $
+   SVN last checkin  :  $Date: 2020-03-04 16:36:49 +0000 (Wed, 04 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_type_explorer.h 1920 2016-02-25 12:43:37Z karsten $
+   SVN Id            :  $Id: sca_type_explorer.h 2110 2020-03-04 16:36:49Z karsten $
 
  *****************************************************************************/
 
@@ -45,6 +45,8 @@ namespace sca_util
 
 namespace sca_implementation
 {
+
+class sca_trace_object_data;
 
 class sca_type_explorer_base
 {
@@ -88,7 +90,9 @@ public:
 		SC_FIXED_FAST,
 		SC_FIX_FAST,
 		SC_UFIXED_FAST,
-		SC_UFIX_FAST
+		SC_UFIX_FAST,
+
+		SCA_COMPLEX
 
 	};
 
@@ -96,10 +100,16 @@ public:
 	const void* data;
 	const unsigned long length;
 
+	virtual void manipulate_trace_data(sca_trace_object_data*){}
+
+	virtual ~sca_type_explorer_base(){}
+
 protected:
 
 	sca_type_explorer_base(enum types type_id_,unsigned long length_):
-		type_id(type_id_),data(NULL),length(length_){}
+		type_id(type_id_),data(NULL),length(length_)
+	{
+	}
 
 };
 
@@ -134,6 +144,18 @@ public:
 	sca_type_explorer():
 		sca_type_explorer_base(DOUBLE,1){}
 };
+
+
+////
+
+template<>
+class sca_type_explorer<sca_util::sca_complex> : public sca_type_explorer_base
+{
+public:
+	sca_type_explorer():
+		sca_type_explorer_base(SCA_COMPLEX,2){}
+};
+
 
 ////
 

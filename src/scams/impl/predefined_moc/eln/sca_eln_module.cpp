@@ -3,6 +3,9 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
   Created on: 06.11.2009
 
-   SVN Version       :  $Revision: 1914 $
-   SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+   SVN Version       :  $Revision: 2127 $
+   SVN last checkin  :  $Date: 2020-03-23 13:09:32 +0000 (Mon, 23 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_module.cpp 1914 2016-02-23 18:06:06Z karsten $
+   SVN Id            :  $Id: sca_eln_module.cpp 2127 2020-03-23 13:09:32Z karsten $
 
  *****************************************************************************/
 
@@ -48,6 +51,31 @@
 
 namespace sca_eln
 {
+
+void sca_module::print( std::ostream& str ) const
+{
+	if(dynamic_cast<const sca_util::sca_traceable_object*>(this)!=NULL)
+	{
+		str << get_typed_trace_value();
+	}
+	else
+	{
+		str << this->name();  //default behavior
+	}
+}
+
+void sca_module::dump( std::ostream& str ) const
+{
+	if(dynamic_cast<const sca_util::sca_traceable_object*>(this)!=NULL)
+	{
+		str << this->kind() << " : " << this->name() << " current through module: "<< this->get_typed_trace_value();
+	}
+	else
+	{
+		str << this->kind() << " : " << this->name();  //default behavior
+	}
+}
+
 //used by the sca_linnet_view to set references to eq-system and results
 void sca_module::set_equations(
 		    sca_core::sca_implementation::sca_linear_equation_system* equation_system,
@@ -128,6 +156,21 @@ void sca_module::add_pwl_stamp_to_B(
 		unsigned long idx,
 		const sca_util::sca_vector<std::pair<double,double> >& pwl_vector)
 {
+	//check for increasing x-value
+	for(std::size_t i=1;i<pwl_vector.length();++i)
+	{
+		if(pwl_vector(i).first<=pwl_vector(i-1).first)
+		{
+			std::ostringstream str;
+			str << "Piece wise linear (pwl) values must have an increasing x-value";
+			str << " the " << i << "th. value: " << pwl_vector(i-1).first << " is larger or equal";
+			str << " to the " << i+1 << "th. value: " << pwl_vector(i).first;
+			str << " in: " << this->kind() << " of instance: " << this->name();
+			SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+			return;
+		}
+	}
+
 	if(pwl_stamps==NULL)
 	{
 		//pwl_stamps is assigned in sca_eln::sca_module::set_equations
@@ -147,6 +190,9 @@ void sca_module::add_pwl_stamp_to_B(
 	pwl_stamps->add_pwl_stamp(idy,idx,pwl_tmp);
 }
 
+/**
+ * B(idy,idx)=pwl(arg_idx)
+ */
 void sca_module::add_pwl_b_stamp_to_B(
 		unsigned long idy,
 		unsigned long idx,
@@ -202,10 +248,10 @@ unsigned long sca_module::nequations()
 	return (*Ai).n_cols();
 }
 
-void sca_module::add_solver_trace(
+bool sca_module::add_solver_trace(
 		sca_util::sca_implementation::sca_trace_object_data& data)
 {
-	 get_sync_domain()->add_solver_trace(data);
+	 return get_sync_domain()->add_solver_trace(data);
 }
 
 /**
@@ -294,10 +340,6 @@ sca_module::sca_module()
 {
     //assign module to linnet - view
     view_interface = new sca_eln::sca_implementation::sca_eln_view;
-
-    through_value_type = "-";
-    through_value_unit = "-";
-    through_value_available = false;
 
     continous=false;
     enable_b_change=false;

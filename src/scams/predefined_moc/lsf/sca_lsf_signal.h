@@ -28,10 +28,10 @@
 
  Created on: 05.03.2009
 
- SVN Version       :  $Revision: 1909 $
- SVN last checkin  :  $Date: 2016-02-16 11:09:52 +0100 (Tue, 16 Feb 2016) $
+ SVN Version       :  $Revision: 2132 $
+ SVN last checkin  :  $Date: 2020-03-27 13:40:11 +0000 (Fri, 27 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_lsf_signal.h 1909 2016-02-16 10:09:52Z karsten $
+ SVN Id            :  $Id: sca_lsf_signal.h 2132 2020-03-27 13:40:11Z karsten $
 
  *****************************************************************************/
 /*
@@ -86,6 +86,24 @@ public:
 	 * is a new eln result is available
 	 */
 	bool register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback,void*);
+	bool register_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+	bool remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+
+
+	/**
+	 * experimental physical domain mehtods
+	 */
+	virtual void set_unit(const std::string& unit);
+	virtual const std::string& get_unit() const;
+
+	virtual void set_unit_prefix(const std::string& prefix);
+	virtual const std::string& get_unit_prefix() const;
+
+	virtual void set_domain(const std::string& domain);
+	virtual const std::string& get_domain() const;
+
+	virtual void print( std::ostream& = std::cout ) const;
+	virtual void dump( std::ostream& = std::cout ) const;
 
 private:
 	// Disabled
@@ -108,6 +126,11 @@ private:
 	sca_lsf::sca_module* lsf_module;
 
 	mutable sca_core::sca_implementation::sca_con_interactive_trace_data* trd;
+
+
+	std::string unit;
+	std::string unit_prefix;
+	std::string domain;
 
 	// end implementation specific
 

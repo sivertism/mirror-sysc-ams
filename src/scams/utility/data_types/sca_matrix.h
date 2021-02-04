@@ -27,7 +27,7 @@
  Created on: 08.03.2009
 
  SVN Version       :  $Revision: 1912 $
- SVN last checkin  :  $Date: 2016-02-18 19:48:46 +0100 (Thu, 18 Feb 2016) $
+ SVN last checkin  :  $Date: 2016-02-18 18:48:46 +0000 (Thu, 18 Feb 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_matrix.h 1912 2016-02-18 18:48:46Z karsten $
 

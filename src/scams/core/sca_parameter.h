@@ -26,10 +26,10 @@
 
  Created on: 03.03.2009
 
- SVN Version       :  $Revision: 1914 $
- SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $ (UTC)
+ SVN Version       :  $Revision: 2132 $
+ SVN last checkin  :  $Date: 2020-03-27 13:40:11 +0000 (Fri, 27 Mar 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_parameter.h 1914 2016-02-23 18:06:06Z karsten $
+ SVN Id            :  $Id: sca_parameter.h 2132 2020-03-27 13:40:11Z karsten $
 
  *****************************************************************************/
 /*
@@ -58,6 +58,8 @@ public:
 
 	virtual std::string to_string() const;
 	virtual void print(std::ostream& = std::cout) const;
+	virtual void dump( std::ostream& = std::cout ) const;
+
 
 	const T& get() const;
 	operator const T&() const;
@@ -68,9 +70,14 @@ public:
 	sca_core::sca_parameter<T>& operator=(
 			const sca_core::sca_parameter<T>& value);
 
+#if __cplusplus >= 201103L
+	sca_core::sca_parameter<T>& operator=(const std::initializer_list<T>& );
+#endif
+
 	// begin implementation specific
 
 	sca_parameter(const sca_parameter<T>&);
+
 
 
 private:
@@ -131,6 +138,15 @@ inline void sca_parameter<T>::print(std::ostream& str) const
 }
 
 template<class T>
+inline void sca_parameter<T>::dump( std::ostream& str ) const
+{
+	str << this->kind() << " : " << this->name() << " value: "<< c_value;
+	if(this->is_locked()) str << " parameter locked";
+	else                  str << " parameter not locked";
+}
+
+
+template<class T>
 inline const T& sca_parameter<T>::get() const
 {
 	if(!unlock_flag) const_cast<sca_parameter<T>*>(this)->locked_flag=true;
@@ -175,6 +191,16 @@ inline sca_core::sca_parameter<T>& sca_parameter<T>::operator=(const sca_core::s
 	set(value.get());
 	return *this;
 }
+
+#if __cplusplus >= 201103L
+template<class T>
+inline sca_core::sca_parameter<T>& sca_parameter<T>::operator=(const std::initializer_list<T>& lst)
+{
+	set(*lst.begin());
+	return *this;
+}
+#endif
+
 
 // end implementation specific
 

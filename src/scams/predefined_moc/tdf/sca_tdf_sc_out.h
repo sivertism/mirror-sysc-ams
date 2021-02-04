@@ -3,7 +3,7 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 04.03.2009
 
- SVN Version       :  $Revision: 1960 $
- SVN last checkin  :  $Date: 2016-03-21 16:43:40 +0100 (Mon, 21 Mar 2016) $ (UTC)
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_sc_out.h 1960 2016-03-21 15:43:40Z karsten $
+ SVN Id            :  $Id: sca_tdf_sc_out.h 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 /*
@@ -130,6 +130,24 @@ public:
 	 * at the current SystemC time (the time returned by sc_core::sc_time_stamp())
 	 */
 	const T& get_typed_trace_value() const;
+	virtual const std::string& get_trace_value() const;
+
+
+    /**
+     * registers trace callback
+     */
+	virtual bool register_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+	virtual bool remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+
+	/** method of interactive tracing interface, which forces a value
+	 */
+    void force_typed_value(const T&);
+    virtual void set_force_value(const std::string& stri);
+
+
+    /** method of interactive tracing interface, which releases a forced value
+    */
+    virtual void release_value();
 
 //end implementation specific
 
@@ -168,6 +186,8 @@ private:
 	virtual bool trace_init(sca_util::sca_implementation::sca_trace_object_data& data);
 	virtual void trace(long id, sca_util::sca_implementation::sca_trace_buffer& buffer);
 
+	void trace_internal(const sca_core::sca_time& tp,const T& val);
+
 	 //sc trace of sc_core::sc_object to prevent clang warning due overloaded
 	 //sca_traceable_object function
 	 void trace( sc_core::sc_trace_file* tf ) const;
@@ -183,6 +203,18 @@ private:
 
 	std::vector<T> delay_buffer;
 
+	//variables for interactive trace callback
+	std::vector<sca_util::sca_traceable_object::callback_functor_base*> callbacks;
+	bool callback_registered;
+
+	T forced_value;
+	bool value_forced;
+
+	sca_core::sca_time last_traced_time;
+	bool trace_cluster_cb_added;
+
+	mutable std::string current_trace_value_string;
+
 	//end implementation specific
 };
 
@@ -195,19 +227,84 @@ private:
 template<class T>
 const T& sca_out<T>::get_typed_trace_value() const
 {
-	const sc_core::sc_interface* scif=this->get_interface();
-	const sc_core::sc_signal_inout_if<T>* sc_sig=
-			dynamic_cast<const sc_core::sc_signal_inout_if<T>*>(scif);
-
-	if(sc_sig==NULL)
-	{
-		static const T dummy;
-		return dummy;
-	}
-
-	return sc_sig->read();
+	return value_handle.read();
 }
 
+template<class T>
+const std::string& sca_out<T>::get_trace_value() const
+{
+	std::ostringstream str;
+	str << get_typed_trace_value();
+	current_trace_value_string=str.str();
+
+	return current_trace_value_string;
+}
+
+
+
+/**
+ * method for register a trace callback
+ */
+template<class T>
+inline bool sca_out<T>::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	this->callbacks.push_back(&func);
+	this->callback_registered=true;
+    return true;
+}
+
+/**
+ * method for removing a trace callback
+ */
+template<class T>
+inline bool sca_out<T>::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	for(std::vector<sca_util::sca_traceable_object::callback_functor_base*>::iterator
+			it=this->callbacks.begin();it!=this->callbacks.end();++it)
+	{
+		if(*it == &func)
+		{
+			this->callbacks.erase(it);
+			if(this->callbacks.size()<=0) this->callback_registered=false;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/** method of interactive tracing interface, which forces a value
+ */
+template<class T>
+inline void sca_out<T>::force_typed_value(const T& val)
+{
+	this->forced_value=val;
+	this->value_forced=true;
+}
+
+template<class T>
+inline void sca_out<T>::set_force_value(const std::string& stri)
+{
+	if(!sca_util::sca_implementation::convert_from_string(forced_value,stri))
+	{
+		std::ostringstream str;
+		str << "Cannot convert string: " << stri << " to port type of port: ";
+		str << this->name() << " in method force_value - use force_typed_value instead";
+		SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
+		return;
+	}
+
+	this->value_forced=true;
+}
+
+
+/** method of interactive tracing interface, which releases a forced value
+*/
+template<class T>
+void sca_out<T>::release_value()
+{
+	this->value_forced=false;
+}
 
 
 template<class T>
@@ -289,6 +386,11 @@ inline void sca_out<T>::construct()
 
 	traces_available=false;
 	initialization_pendig=false;
+
+	callback_registered=false;
+	value_forced=false;
+
+	trace_cluster_cb_added=false;
 }
 
 template<class T>
@@ -321,14 +423,19 @@ inline void sca_out<T>::end_of_port_elaboration()
 template<class T>
 inline void sca_out<T>::write_sc_signal()
 {
+	if(this->value_forced)
+	{
+		value_handle.write(this->forced_value);
+	}
+
 	(*this)->write(value_handle.read());
 
-	if(traces_available)
+	if(this->callback_registered)
 	{
-		//due the tracing is not under control of the TDF scheduler, we must
-		//check whether all trace files are initialized
-		initialize_all_traces();
-		for(unsigned long i=0;i<trace_data.size();i++) trace_data[i]->trace();
+		for(unsigned long i=0;i<this->callbacks.size();++i)
+		{
+			(*(this->callbacks[i]))();
+		}
 	}
 }
 
@@ -546,7 +653,7 @@ inline const T& sca_out<T>::read_delayed_value(unsigned long sample_id) const
 		 str << "can't execute read_delayed_value() "
 				 "outside the context of the callback reinitialize, "
 				 "of the current module ";
-		 str << "for port: " << pobj->sca_name();
+		 str << "for port: " << this->name();
 		 SC_REPORT_ERROR("SytemC-AMS",str.str().c_str());
 		 return delay_buffer[0];
 	}
@@ -645,6 +752,11 @@ inline void sca_out<T>::write(const T& value, unsigned long sample_id)
 
 	this->value_handle.write_tmp(value);
 	this->write_sc_value_on_time(sched_time, sched_time + ptimestep, this->value_handle);
+
+	if(traces_available)
+	{
+		this->trace_internal(sched_time,value);
+	}
 }
 
 
@@ -784,21 +896,38 @@ inline bool sca_out<T>::trace_init(sca_util::sca_implementation::sca_trace_objec
 	trace_data.push_back(&data);
 	data.set_type_info<T>();
 
-
-    data.type="-";
-    data.unit="-";
-
     data.event_driven=true;
     data.dont_interpolate=true;
+
+    if(!trace_cluster_cb_added) this->add_cluster_trace(data);
+    trace_cluster_cb_added=true;
 
     return true;
 
 }
 
 template<class T>
+inline void sca_out<T>::trace_internal(const sca_core::sca_time& tp,const T& val)
+{
+	//will be called for each write action
+	for(std::size_t i=0;i<trace_data.size();++i)
+	{
+		trace_data[i]->trace_buffer->store_time_stamp(trace_data[i]->id, tp,val);
+	}
+
+	if(tp>this->last_traced_time) this->last_traced_time=tp;
+}
+
+
+
+template<class T>
 inline void sca_out<T>::trace(long id, sca_util::sca_implementation::sca_trace_buffer& buffer)
 {
-	buffer.store_time_stamp(id, sc_core::sc_time_stamp(),value_handle.read());
+	//will be called after cluster execution
+	if(sc_core::sc_time_stamp()>this->last_traced_time)
+	{
+		this->trace_internal( sc_core::sc_time_stamp(),value_handle.read());
+	}
 }
 
 //sc trace of sc_core::sc_object to prevent clang warning due overloaded
@@ -808,6 +937,7 @@ inline void sca_out<T>::trace( sc_core::sc_trace_file* tf ) const
 {
 	sc_core::sc_port_b<sc_core::sc_signal_inout_if<T> >::trace(tf);
 }
+
 
 
 } // namespace sca_de

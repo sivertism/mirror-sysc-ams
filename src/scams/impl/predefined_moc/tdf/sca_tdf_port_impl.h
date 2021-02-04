@@ -26,10 +26,10 @@
 
   Created on: 05.08.2009
 
-   SVN Version       :  $Revision: 1920 $
-   SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+   SVN Version       :  $Revision: 1999 $
+   SVN last checkin  :  $Date: 2016-09-01 12:33:08 +0000 (Thu, 01 Sep 2016) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_tdf_port_impl.h 1920 2016-02-25 12:43:37Z karsten $
+   SVN Id            :  $Id: sca_tdf_port_impl.h 1999 2016-09-01 12:33:08Z karsten $
 
  *****************************************************************************/
 
@@ -95,11 +95,11 @@ class sca_tdf_port_impl : public sca_core::sca_port<SC_IF>,
   const T& read_delayed_value(unsigned long sample) const;
 
   /** Port write to the first sample */
-  void write(T value);
+  void write(const T& value);
 
 
   /** Port write for an an arbitrary sample (sample must be < rate) */
-  void write(T value,unsigned long sample);
+  void write(const T& value,unsigned long sample);
 
   /** Port write in the initialize phase */
   void initialize(const T& value, unsigned long sample_id);
@@ -346,7 +346,7 @@ inline const T& sca_tdf_port_impl<SC_IF,T>::read_delayed_value(unsigned long sam
 
 
 template<class SC_IF, class T>
-inline void sca_tdf_port_impl<SC_IF,T>::write(T value)
+inline void sca_tdf_port_impl<SC_IF,T>::write(const T& value)
 {
 	if(!(*allow_processing_access_flag))
 	{
@@ -362,7 +362,7 @@ inline void sca_tdf_port_impl<SC_IF,T>::write(T value)
 }
 
 template<class SC_IF, class T>
-inline void sca_tdf_port_impl<SC_IF,T>::write(T value,unsigned long sample)
+inline void sca_tdf_port_impl<SC_IF,T>::write(const T& value,unsigned long sample)
 {
 	if(!(*allow_processing_access_flag))
 	{

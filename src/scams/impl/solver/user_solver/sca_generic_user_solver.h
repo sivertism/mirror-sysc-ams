@@ -74,8 +74,8 @@ public:
 
     virtual const char* kind() const;
 
-    //method called from user solver to send trace values
-    void trace(sca_core::sca_time ttime,double value,int id);
+    sca_util::sca_implementation::sca_trace_object_data& get_trace_obj_data(int id);
+
 
     //removes compiler warning due virtual function in sc_object
     void trace( sc_core::sc_trace_file* tf ) const;
@@ -95,7 +95,12 @@ private:
 
     sca_core::sca_user_solver_base* user_solver;
 
-    void add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj);
+
+    /**
+     * called by the sca_traceable object trace_init callback to assign a trace to the solver
+     * returns true if successful
+     */
+    bool add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& tr_obj);
 
 
 

@@ -32,8 +32,7 @@ CXX_FILES = \
 	sca_trace_value_handler.cpp \
 	sca_trace_write_comment.cpp \
 	sca_vcd_trace.cpp \
-	sca_vcd_trace_file.cpp \
-	sca_traceable_object.cpp
+	sca_vcd_trace_file.cpp 
 
 NO_CXX_FILES =
 

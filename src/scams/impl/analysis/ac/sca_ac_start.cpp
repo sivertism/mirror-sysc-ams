@@ -29,7 +29,7 @@
   Created on: 02.01.2010
 
    SVN Version       :  $Revision: 1944 $
-   SVN last checkin  :  $Date: 2016-03-11 14:28:43 +0100 (Fri, 11 Mar 2016) $
+   SVN last checkin  :  $Date: 2016-03-11 13:28:43 +0000 (Fri, 11 Mar 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_ac_start.cpp 1944 2016-03-11 13:28:43Z karsten $
 

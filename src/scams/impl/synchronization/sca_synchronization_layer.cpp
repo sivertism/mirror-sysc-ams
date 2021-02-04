@@ -26,10 +26,10 @@
 
   Created on: 25.08.2009
 
-   SVN Version       :  $Revision: 1608 $
-   SVN last checkin  :  $Date: 2013-08-22 16:09:50 +0200 (Thu, 22 Aug 2013) $
+   SVN Version       :  $Revision: 2115 $
+   SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_synchronization_layer.cpp 1608 2013-08-22 14:09:50Z karsten $
+   SVN Id            :  $Id: sca_synchronization_layer.cpp 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -75,6 +75,13 @@ void sca_synchronization_layer::reschedule_cluster(unsigned long cluster_id)
 {
   alg->reschedule_cluster(cluster_id);
 }
+
+
+sc_core::sc_object* sca_synchronization_layer::get_current_context()
+{
+	return alg==NULL?NULL:alg->get_current_context();
+}
+
 
 /////////////////////////////////////////////////////////
 

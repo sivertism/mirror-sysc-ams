@@ -28,10 +28,10 @@
 
  Created on: 22.10.2009
 
- SVN Version       :  $Revision: 1925 $
- SVN last checkin  :  $Date: 2016-02-26 09:23:53 +0100 (Fri, 26 Feb 2016) $
+ SVN Version       :  $Revision: 2101 $
+ SVN last checkin  :  $Date: 2020-02-21 12:16:08 +0000 (Fri, 21 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: MA_matspars.c 1925 2016-02-26 08:23:53Z karsten $
+ SVN Id            :  $Id: MA_matspars.c 2101 2020-02-21 12:16:08Z karsten $
 
  *****************************************************************************/
 
@@ -75,7 +75,7 @@
  *  Purpose :  procedures for sparse matrix technique,  lin. equation solver
  *  Notes   :
  *  Author  :  C.Clauss
- *  Version :  $Id: MA_matspars.c 1925 2016-02-26 08:23:53Z karsten $
+ *  Version :  $Id: MA_matspars.c 2101 2020-02-21 12:16:08Z karsten $
  *
  */
 
@@ -106,6 +106,8 @@ exportMA_Sparse void MA_InitSparse(struct sparse* sA)
 
 exportMA_Sparse void MA_FreeSparse(struct sparse* sA)
 {
+	if(sA==NULL) return;
+
 	sA->nd = sA->nel = sA->nmax = sA->m = sA->n = 0;
 	sA->sparse_list_ordered = 0;
 
@@ -308,6 +310,8 @@ void MA_SortSparseList(struct sparse *sA)
 
 exportMA_Sparse void MA_InitCode(struct spcode* code)
 {
+	if(code==NULL) return;
+
 	code->ndec  = code->nsol = code->nsoldec = code->rank = 0;
 	code->dec                                   = NULL;
 	code->sol                                   = NULL;
@@ -316,7 +320,7 @@ exportMA_Sparse void MA_InitCode(struct spcode* code)
 	code->critical_line = code->critical_column = -1; /* in regular case */
 
 	/* default values */
-	code->piv_abs_tol      = 1.e-15;
+	code->piv_abs_tol      = 1.e-18;
 	code->piv_rel_tol      = 1.e-10;
 	code->gener_piv_scope  = 0.1;
 	code->SparseDebug      = 0;
@@ -331,6 +335,8 @@ exportMA_Sparse void MA_InitCode(struct spcode* code)
 
 exportMA_Sparse void MA_FreeCode(struct spcode  *code)
 {
+	if(code==NULL) return;
+
 	code->ndec = code->nsol = code->nsoldec = code->rank = 0;
 
 	if (code->dec != NULL)

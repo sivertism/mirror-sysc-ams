@@ -28,10 +28,10 @@
 
   Created on: 12.12.2009
 
-   SVN Version       :  $Revision: 1892 $
-   SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $
+   SVN Version       :  $Revision: 2102 $
+   SVN last checkin  :  $Date: 2020-02-21 14:58:34 +0000 (Fri, 21 Feb 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_tdf_trace_variable_base.h 1892 2016-01-10 11:59:12Z karsten $
+   SVN Id            :  $Id: sca_tdf_trace_variable_base.h 2102 2020-02-21 14:58:34Z karsten $
 
  *****************************************************************************/
 
@@ -48,7 +48,8 @@ namespace sca_implementation
 
 
 class sca_trace_variable_base :  public sc_core::sc_object,
-                                 public sca_util::sca_traceable_object
+                                 public sca_util::sca_traceable_object,
+		                         public sca_core::sca_physical_domain_interface
 {
 public:
     sca_trace_variable_base(const char* nm);
@@ -60,12 +61,26 @@ public:
 
 	/** overloads sca_traceable_object method */
 	bool register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback,void*);
+	bool register_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+	bool remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
 
 	/** overloads sca_traceable_object method */
 	bool force_value(const std::string&);
 
 	/** overloads sca_traceable_object method */
 	void release_value();
+
+	/**
+	   * experimental physical domain interface
+	*/
+	virtual void set_unit(const std::string& unit);
+	virtual const std::string& get_unit() const;
+
+	virtual void set_unit_prefix(const std::string& prefix);
+	virtual const std::string& get_unit_prefix() const;
+
+	virtual void set_domain(const std::string& domain);
+	virtual const std::string& get_domain() const;
 
 protected:
 
@@ -117,6 +132,9 @@ private:
 	sc_core::sc_event                                  trace_callback_write_event;
 	long                                               trace_callback_pos;
 
+	std::vector<sca_traceable_object::callback_functor_base*> callbacks;
+	bool callback_registered;
+
 	//callback process
 	void trace_callback();
 
@@ -131,6 +149,10 @@ private:
 	bool scheduled_force_value_flag;
 
 	sc_core::sc_process_handle force_proc_handle;
+
+	std::string unit;
+	std::string unit_prefix;
+	std::string domain;
 
 };
 

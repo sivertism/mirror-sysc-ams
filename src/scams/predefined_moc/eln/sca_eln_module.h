@@ -3,7 +3,7 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 06.11.2009
 
- SVN Version       :  $Revision: 1914 $
- SVN last checkin  :  $Date: 2016-02-23 19:06:06 +0100 (Tue, 23 Feb 2016) $
+ SVN Version       :  $Revision: 2132 $
+ SVN last checkin  :  $Date: 2020-03-27 13:40:11 +0000 (Fri, 27 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_eln_module.h 1914 2016-02-23 18:06:06Z karsten $
+ SVN Id            :  $Id: sca_eln_module.h 2132 2020-03-27 13:40:11Z karsten $
 
  *****************************************************************************/
 /*
@@ -97,6 +97,9 @@ class sca_module: public sca_core::sca_implementation::sca_conservative_module
 {
 public:
 	virtual const char* kind() const;
+
+	virtual void print( std::ostream& = std::cout ) const;
+	virtual void dump( std::ostream& = std::cout ) const;
 
 protected:
 	//constructor
@@ -168,13 +171,6 @@ protected:
 	 */
 	unsigned long add_equation(unsigned long num = 1);
 
-	//redirect to base class to prevent friend declaration for each module or
-	//protected declaration in sca_core::sca_module (in this case accesable
-	//e.g. in tdf modules)
-	sca_core::sca_implementation::sca_solver_base* get_sync_domain()
-	{
-		return sca_core::sca_module::get_sync_domain();
-	}
 
 	//redirect to base class to prevent friend declaration  ... see above
 	sca_core::sca_time get_time()
@@ -198,16 +194,12 @@ protected:
 	void add_method(method_kinds kind, const sca_util::sca_implementation::sca_method_object<void>&);
 	void remove_method(method_kinds kind, const sca_util::sca_implementation::sca_method_object<void>&);
 
-	std::string through_value_type;
-	std::string through_value_unit;
-	bool through_value_available;
-
 
 	bool enable_b_change;
 	bool continous;
 
 	/** adds module to trace */
-	void add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& data);
+	bool add_solver_trace(sca_util::sca_implementation::sca_trace_object_data& data);
 
 private:
 

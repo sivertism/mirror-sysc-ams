@@ -29,7 +29,7 @@
  Created on: 09.01.2010
 
  SVN Version       :  $Revision: 1930 $
- SVN last checkin  :  $Date: 2016-02-26 17:16:13 +0100 (Fri, 26 Feb 2016) $
+ SVN last checkin  :  $Date: 2016-02-26 16:16:13 +0000 (Fri, 26 Feb 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_lsf_ltf_nd.cpp 1930 2016-02-26 16:16:13Z karsten $
 

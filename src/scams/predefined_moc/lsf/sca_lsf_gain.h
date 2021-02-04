@@ -3,8 +3,7 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
-    COSEDA Technologies GmbH
+    Copyright 2015-2020   COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,10 +27,10 @@
 
  Created on: 05.03.2009
 
- SVN Version       :  $Revision: 1950 $
- SVN last checkin  :  $Date: 2016-03-21 13:45:39 +0100 (Mon, 21 Mar 2016) $
+ SVN Version       :  $Revision: 2096 $
+ SVN last checkin  :  $Date: 2020-01-28 15:42:55 +0000 (Tue, 28 Jan 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_lsf_gain.h 1950 2016-03-21 12:45:39Z karsten $
+ SVN Id            :  $Id: sca_lsf_gain.h 2096 2020-01-28 15:42:55Z karsten $
 
  *****************************************************************************/
 /*

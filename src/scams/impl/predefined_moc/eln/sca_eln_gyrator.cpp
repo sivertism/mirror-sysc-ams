@@ -3,6 +3,9 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
  Created on: 10.11.2009
 
- SVN Version       :  $Revision: 1703 $
- SVN last checkin  :  $Date: 2014-04-23 12:10:42 +0200 (Wed, 23 Apr 2014) $
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_eln_gyrator.cpp 1703 2014-04-23 10:10:42Z karsten $
+ SVN Id            :  $Id: sca_eln_gyrator.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 
@@ -45,9 +48,6 @@ sca_gyrator::sca_gyrator(sc_core::sc_module_name, double g1_,
 		double g2_) :
 	p1("p1"), n1("n1"), p2("p2"), n2("n2"), g1("g1", g1_), g2("g2", g2_)
 {
-	through_value_available = false;
-	through_value_type = "I";
-	through_value_unit = "A";
 }
 
 

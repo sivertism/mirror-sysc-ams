@@ -3,7 +3,7 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1950 $
-   SVN last checkin  :  $Date: 2016-03-21 13:45:39 +0100 (Mon, 21 Mar 2016) $
+   SVN Version       :  $Revision: 2106 $
+   SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_vccs.cpp 1950 2016-03-21 12:45:39Z karsten $
+   SVN Id            :  $Id: sca_eln_vccs.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 
@@ -51,10 +51,6 @@ sca_vccs::sca_vccs(
 		const sca_pwl_pair_vector& pwl_value_) :
 	ncp("ncp"), ncn("ncn"), np("np"), nn("nn"), value("value", value_), pwl_value("pwl_value", pwl_value_)
 {
-	through_value_available = false;
-	through_value_type = "I";
-	through_value_unit = "A";
-
 	nadd1=-1;
 	nadd2=-1;
 }

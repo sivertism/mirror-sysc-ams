@@ -28,10 +28,10 @@
 
  Created on: 15.05.2009
 
- SVN Version       :  $Revision: 1947 $
- SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $
+ SVN Version       :  $Revision: 2115 $
+ SVN last checkin  :  $Date: 2020-03-12 17:26:27 +0000 (Thu, 12 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_module.cpp 1947 2016-03-13 20:11:21Z karsten $
+ SVN Id            :  $Id: sca_module.cpp 2115 2020-03-12 17:26:27Z karsten $
 
  *****************************************************************************/
 
@@ -83,7 +83,25 @@ void sca_module::construct()
 
     user_solver_handler=NULL;
 
-	sca_get_curr_simcontext()->get_sca_object_manager()->insert_module(this);
+	sca_core::sca_implementation::sca_simcontext* simc;
+	simc=sca_core::sca_implementation::sca_get_curr_simcontext();
+
+	if(simc==NULL)
+	{
+		std::ostringstream str;
+		str << "Cannot create a new module after the simulation has been finished";
+		str << " or a module or sca_interface has been deleted";
+
+		sc_core::sc_object* obj=dynamic_cast<sc_core::sc_object*>(this);
+		if(obj!=NULL)
+		{
+			str << " for: " << obj->name();
+		}
+		SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+		return;
+	}
+
+	simc->get_sca_object_manager()->insert_module(this);
 }
 
 
@@ -116,12 +134,22 @@ sca_module::~sca_module()
 {
 	if(sca_get_curr_simcontext()!=NULL)
 	{
-		if(this->get_sync_domain()!=NULL)
-		{
-			this->get_sync_domain()->associated_module_deleted=true;
+	 	if((sc_core::sc_status() & 0x3)!=0) //during elaboration delte allowed
+	 	{
+			delete sca_get_curr_simcontext();
+	  	}
+	  	else
+	  	{
+	
+			if(this->get_sync_domain()!=NULL)
+			{
+				this->get_sync_domain()->associated_module_deleted=true;
+			}
+			sca_get_curr_simcontext()->get_sca_object_manager()->remove_module(this); 
 		}
-		sca_get_curr_simcontext()->get_sca_object_manager()->remove_module(this);
 	}
+
+
 }
 
 //////////////////////////////////////////////////////////////////
@@ -372,6 +400,16 @@ long sca_module::get_calls_per_period()
 	return sync_domain->get_calls_per_period();
 }
 
+
+/**
+	 * gets unique id for the current computation cluster
+	 * if the module is not (yet) associated to a cluster -1 is returned
+	 */
+long sca_module::get_cluster_id()
+{
+	if(get_sync_domain()==NULL) return -1;
+	return sync_domain->get_cluster_id();
+}
 
 bool* sca_module::get_allow_processing_access_flag_ref()
 {

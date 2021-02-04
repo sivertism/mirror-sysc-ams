@@ -27,7 +27,7 @@
  Created on: 05.03.2009
 
  SVN Version       :  $Revision: 1681 $
- SVN last checkin  :  $Date: 2014-04-02 12:11:21 +0200 (Wed, 02 Apr 2014) $
+ SVN last checkin  :  $Date: 2014-04-02 10:11:21 +0000 (Wed, 02 Apr 2014) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_lsf_tdf_gain.h 1681 2014-04-02 10:11:21Z karsten $
 

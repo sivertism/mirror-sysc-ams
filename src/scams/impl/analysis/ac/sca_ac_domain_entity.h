@@ -26,10 +26,10 @@
 
   Created on: 02.01.2010
 
-   SVN Version       :  $Revision: 1265 $
-   SVN last checkin  :  $Date: 2011-11-19 21:43:31 +0100 (Sat, 19 Nov 2011) $
+   SVN Version       :  $Revision: 2045 $
+   SVN last checkin  :  $Date: 2017-09-19 14:05:56 +0000 (Tue, 19 Sep 2017) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_ac_domain_entity.h 1265 2011-11-19 20:43:31Z karsten $
+   SVN Id            :  $Id: sca_ac_domain_entity.h 2045 2017-09-19 14:05:56Z karsten $
 
  *****************************************************************************/
 
@@ -91,6 +91,7 @@ public:
     unsigned long init_additional_equations(unsigned long eq_start);
 
     // constructors
+    //an ac-node can be a sc_module or a solver only
     sca_ac_domain_entity(sc_core::sc_module* mod);
     sca_ac_domain_entity(sca_core::sca_implementation::sca_solver_base* solv);
 
@@ -132,7 +133,7 @@ private:
     sc_core::sc_module*        module;
     sca_core::sca_implementation::sca_solver_base*  solver;
 
-    sc_core::sc_object* obj;
+    sca_ac_analysis::sca_ac_object* obj;
 };
 
 

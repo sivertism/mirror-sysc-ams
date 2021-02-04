@@ -27,7 +27,7 @@
  Created on: 05.03.2009
 
  SVN Version       :  $Revision: 1909 $
- SVN last checkin  :  $Date: 2016-02-16 11:09:52 +0100 (Tue, 16 Feb 2016) $
+ SVN last checkin  :  $Date: 2016-02-16 10:09:52 +0000 (Tue, 16 Feb 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_lsf_ltf_zp.h 1909 2016-02-16 10:09:52Z karsten $
 

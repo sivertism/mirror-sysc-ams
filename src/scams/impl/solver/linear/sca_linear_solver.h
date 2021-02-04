@@ -3,6 +3,8 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,14 +24,14 @@
 
  sca_linear_solver.h - description
 
- Original Author: Karsten Einwich Fraunhofer IIS/EAS Dresden
+ Original Author: Karsten Einwich COSEDA Technologies GmbH
 
  Created on: 09.11.2009
 
- SVN Version       :  $Revision: 1832 $
- SVN last checkin  :  $Date: 2015-05-22 16:36:47 +0200 (Fri, 22 May 2015) $
+ SVN Version       :  $Revision: 2100 $
+ SVN last checkin  :  $Date: 2020-02-19 14:29:32 +0000 (Wed, 19 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_linear_solver.h 1832 2015-05-22 14:36:47Z karsten $
+ SVN Id            :  $Id: sca_linear_solver.h 2100 2020-02-19 14:29:32Z karsten $
 
  *****************************************************************************/
 
@@ -58,6 +60,7 @@ namespace sca_implementation
   Solver class for an analog linear solver.
 */
 class sca_linear_solver : public sca_core::sca_implementation::sca_solver_base
+
 {
 
 public:
@@ -86,6 +89,15 @@ public:
 
     virtual const char* kind() const;
 
+
+    //Methods for supporting ac-simulation
+    void ac_domain_eq_method( sca_util::sca_matrix<double>*& A_o,
+                              sca_util::sca_matrix<double>*& B_o,
+                              sca_util::sca_vector<sca_util::sca_complex >*& q_o );
+
+    void ac_add_eq_cons_method( sca_util::sca_matrix<sca_util::sca_complex >*& con_matr,
+                                           sca_util::sca_vector<sca_util::sca_complex >& y );
+
 private:
 
     /** set implementation defined solver parameter */
@@ -96,14 +108,11 @@ private:
 
     //variables to permit check of inconsistent double setting
     bool                  force_implicit_euler_method;
+    int                   reinitialization_steps;
     bool                  algorithm_set;
     std::string           algorithm_value;
     sca_core::sca_module* algorithm_module;
 
-    bool                  ignore_woodbury;
-    bool                  woodbury_set;
-    std::string           woodbury_value;
-    sca_core::sca_module* woodbury_module;
 
     std::string get_name_associated_names(int max_num=-1) const;
 
@@ -162,13 +171,6 @@ private:
     sca_solv_data* internal_solver_data; //solver data to solve equation system
 
 
-    //Methods for supporting ac-simulation
-    void ac_domain_eq_method( sca_util::sca_matrix<double>*& A_o,
-                              sca_util::sca_matrix<double>*& B_o,
-                              sca_util::sca_vector<sca_util::sca_complex >*& q_o );
-
-    void ac_add_eq_cons_method( sca_util::sca_matrix<sca_util::sca_complex >*& con_matr,
-                                           sca_util::sca_vector<sca_util::sca_complex >& y );
 
     sca_util::sca_vector<sca_util::sca_complex > q_ac;
     sca_util::sca_matrix<sca_util::sca_complex > con_matr_ac;
@@ -176,7 +178,7 @@ private:
     bool ac_equation_initialized;
 
     unsigned long number_of_timesteps; //number of all timesteps (without intermediate time steps)
-    unsigned long number_of_reinit, number_of_woodbury; //number of reinitializations and number of Woodbury algorithms
+    unsigned long number_of_reinit; //number of reinitializations
 
     //PWL data
 

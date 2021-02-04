@@ -28,10 +28,10 @@
 
  Created on: 27.07.2012
 
- SVN Version       :  $Revision: 1927 $
- SVN last checkin  :  $Date: 2016-02-26 12:32:21 +0100 (Fri, 26 Feb 2016) $
+ SVN Version       :  $Revision: 2100 $
+ SVN last checkin  :  $Date: 2020-02-19 14:29:32 +0000 (Wed, 19 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: ana_utilities.c 1927 2016-02-26 11:32:21Z karsten $
+ SVN Id            :  $Id: ana_utilities.c 2100 2020-02-19 14:29:32Z karsten $
 
  *****************************************************************************/
 
@@ -84,6 +84,16 @@ void ana_set_algorithm(sca_solv_data* data, int alg)
 
 /****************************************/
 
+void ana_set_reinit_steps(
+		  sca_solv_data* data,		/**< internal solver data */
+		  int steps					/**< cur_algorithm: number of steps */
+		  )
+{
+	data->reinit_steps=steps;
+}
+
+/****************************************/
+
 long int ana_get_dimension(sca_solv_data* data)
 {
 	return data->size;
@@ -111,16 +121,6 @@ long int ana_get_sol_flop(sca_solv_data* data, int alg)
 {
 	if (alg == 1) return data->code_euler->sol_flop;
 	else return data->code_trapez->sol_flop;
-}
-
-/****************************************/
-
-void ana_set_variable_step_size(sca_solv_data* data, double h_new,
-		double h_diff)
-{
-	data->variable_step_size = 1;
-	data->h_temp = h_new;
-	data->h_diff = h_diff;
 }
 
 /****************************************/

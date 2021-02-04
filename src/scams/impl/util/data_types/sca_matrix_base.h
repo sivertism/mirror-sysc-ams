@@ -27,7 +27,7 @@
   Created on: 09.10.2009
 
    SVN Version       :  $Revision: 1962 $
-   SVN last checkin  :  $Date: 2016-03-22 08:47:08 +0100 (Tue, 22 Mar 2016) $
+   SVN last checkin  :  $Date: 2016-03-22 07:47:08 +0000 (Tue, 22 Mar 2016) $
    SVN checkin by    :  $Author: arndt $
    SVN Id            :  $Id: sca_matrix_base.h 1962 2016-03-22 07:47:08Z arndt $
 

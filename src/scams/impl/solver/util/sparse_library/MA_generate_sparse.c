@@ -27,7 +27,7 @@
  Created on: 22.10.2009
 
  SVN Version       :  $Revision: 1928 $
- SVN last checkin  :  $Date: 2016-02-26 16:40:16 +0100 (Fri, 26 Feb 2016) $
+ SVN last checkin  :  $Date: 2016-02-26 15:40:16 +0000 (Fri, 26 Feb 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: MA_generate_sparse.c 1928 2016-02-26 15:40:16Z karsten $
 

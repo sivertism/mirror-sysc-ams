@@ -10,7 +10,6 @@ NO_H_FILES = \
 	ma_sparse.h \
 	ma_typedef.h \
 	ma_util.h \
-	ma_woodbury.h \
 	linear_analog_solver.h \
 	linear_direct_sparse.h \
 	sca_solve_ac_linear.h
@@ -21,14 +20,11 @@ CXX_FILES = \
 	ana_init.c \
 	ana_reinit.c \
 	ana_solv.c \
-	ana_solve_woodbury.c \
-	ana_LUdecomposition.c \
 	ana_utilities.c \
 	MA_generate_sparse.c \
 	MA_lequspar.c \
 	MA_matfull.c \
 	MA_matspars.c \
-	MA_woodbury.c \
 	MA_LUdecomposition.c \
 	linear_direct_sparse.c \
 	sca_solve_ac_linear.c

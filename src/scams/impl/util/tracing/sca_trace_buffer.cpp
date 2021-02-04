@@ -27,7 +27,7 @@
  Created on: 13.11.2009
 
  SVN Version       :  $Revision: 1623 $
- SVN last checkin  :  $Date: 2013-09-10 13:26:39 +0200 (Tue, 10 Sep 2013) $
+ SVN last checkin  :  $Date: 2013-09-10 11:26:39 +0000 (Tue, 10 Sep 2013) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_trace_buffer.cpp 1623 2013-09-10 11:26:39Z karsten $
 

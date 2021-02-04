@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
   Created on: 12.11.2009
 
-   SVN Version       :  $Revision: 1944 $
-   SVN last checkin  :  $Date: 2016-03-11 14:28:43 +0100 (Fri, 11 Mar 2016) $
+   SVN Version       :  $Revision: 2112 $
+   SVN last checkin  :  $Date: 2020-03-12 13:06:46 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_isource.cpp 1944 2016-03-11 13:28:43Z karsten $
+   SVN Id            :  $Id: sca_eln_isource.cpp 2112 2020-03-12 13:06:46Z karsten $
 
  *****************************************************************************/
 
@@ -67,13 +67,12 @@ sca_isource::sca_isource(sc_core::sc_module_name, double init_value_ ,
 			ac_phase("ac_phase", ac_phase_), ac_noise_amplitude(
 					"ac_noise_amplitude", ac_noise_amplitude_)
 {
-    through_value_available = true;
-    through_value_type      = "I";
-    through_value_unit      = "A";
-
     i_value=0.0;
 
     nadd = -1;
+
+	unit="A";
+	domain="I";
 }
 
 const char* sca_isource::kind() const
@@ -156,13 +155,9 @@ void sca_isource::matrix_stamps()
 
 bool sca_isource::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type=through_value_type;
-    data.unit=through_value_unit;
-
     //trace will be activated after every complete cluster calculation
     //by the synchronization layer
-    get_sync_domain()->add_solver_trace(data);
-    return true;
+    return get_sync_domain()->add_solver_trace(data);
 }
 
 void sca_isource::trace(long id,sca_util::sca_implementation::sca_trace_buffer& buffer)
@@ -226,6 +221,69 @@ bool sca_isource::register_trace_callback(sca_trace_callback cb,void* cb_arg)
 	return true;
 
 }
+
+
+bool sca_isource::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		this->trd=new sca_core::sca_implementation::sca_con_interactive_trace_data(this);
+	}
+
+
+	this->trd->register_trace_callback(func);
+
+	return true;
+
+}
+
+
+bool sca_isource::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		return false;
+	}
+
+
+	return this->trd->remove_trace_callback(func);
+
+}
+
+
+/**
+   * experimental physical domain interface
+*/
+void sca_isource::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_isource::get_unit() const
+{
+	return unit;
+}
+
+void sca_isource::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_isource::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_isource::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_isource::get_domain() const
+{
+	return domain;
+}
+
 
 
 } //namespace sca_eln

@@ -35,7 +35,10 @@ CXX_FILES = \
 	sca_lsf_ltf_nd.cpp \
 	sca_lsf_ltf_zp.cpp \
 	sca_lsf_delay.cpp \
-	sca_lsf_source.cpp
+	sca_lsf_source.cpp \
+	sca_lsf_lsf_gain.cpp \
+	sca_lsf_lsf_demux.cpp \
+	sca_lsf_lsf_mux.cpp
 
 NO_CXX_FILES =
 

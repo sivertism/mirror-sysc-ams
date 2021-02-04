@@ -27,7 +27,7 @@
   Created on: 07.01.2010
 
    SVN Version       :  $Revision: 1665 $
-   SVN last checkin  :  $Date: 2013-12-23 23:12:50 +0100 (Mon, 23 Dec 2013) $
+   SVN last checkin  :  $Date: 2013-12-23 22:12:50 +0000 (Mon, 23 Dec 2013) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_lsf_de_source.cpp 1665 2013-12-23 22:12:50Z karsten $
 

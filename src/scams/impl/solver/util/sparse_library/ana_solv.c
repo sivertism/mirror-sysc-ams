@@ -26,10 +26,10 @@
 
  Created on: 22.10.2009
 
- SVN Version       :  $Revision: 1715 $
- SVN last checkin  :  $Date: 2014-04-27 16:37:25 +0200 (Sun, 27 Apr 2014) $
+ SVN Version       :  $Revision: 2100 $
+ SVN last checkin  :  $Date: 2020-02-19 14:29:32 +0000 (Wed, 19 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: ana_solv.c 1715 2014-04-27 14:37:25Z karsten $
+ SVN Id            :  $Id: ana_solv.c 2100 2020-02-19 14:29:32Z karsten $
 
  *****************************************************************************/
 
@@ -114,7 +114,14 @@ void ana_solv (
 
        for(i=0;i<size;++i) xp[i]=(x[i]-x_last[i])*hinv; /*derivation*/
 
-       sdata->cur_algorithm=sdata->algorithm;
+       if(sdata->reinit_cnt<=0)
+       {
+    	   sdata->cur_algorithm=sdata->algorithm;
+       }
+       else
+       {
+    	   sdata->reinit_cnt--;
+       }
    }
    else	/*** trapezoidal method ****/
    {

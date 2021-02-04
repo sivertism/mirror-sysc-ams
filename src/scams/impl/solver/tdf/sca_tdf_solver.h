@@ -27,7 +27,7 @@
   Created on: 25.08.2009
 
    SVN Version       :  $Revision: 1318 $
-   SVN last checkin  :  $Date: 2012-04-19 18:31:53 +0200 (Thu, 19 Apr 2012) $
+   SVN last checkin  :  $Date: 2012-04-19 16:31:53 +0000 (Thu, 19 Apr 2012) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_tdf_solver.h 1318 2012-04-19 16:31:53Z karsten $
 

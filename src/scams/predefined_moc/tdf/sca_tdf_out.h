@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 04.03.2009
 
- SVN Version       :  $Revision: 1979 $
- SVN last checkin  :  $Date: 2016-03-31 13:50:06 +0200 (Thu, 31 Mar 2016) $ (UTC)
+ SVN Version       :  $Revision: 2106 $
+ SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_out.h 1979 2016-03-31 11:50:06Z karsten $
+ SVN Id            :  $Id: sca_tdf_out.h 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 /*
@@ -143,21 +143,6 @@ public:
 	 */
     void force_typed_value(const T&);
 
-    /**
-     * releases forced value
-     */
-    virtual void release_value();
-
-    /**
-     * registers trace callback
-     */
-    virtual bool register_trace_callback(
-    		sca_util::sca_traceable_object::sca_trace_callback,void*);
-
-    /**
-     * gets current value as string
-     */
-    virtual const std::string& get_trace_value() const;
 
 private:
 	// Disabled
@@ -223,57 +208,6 @@ void sca_out<T>::force_typed_value(const T& val)
 	scasig->force_typed_value(val);
 }
 
-/** method of interactive interface, which release forced a value
- */
-template<class T>
-void sca_out<T>::release_value()
-{
-	sc_core::sc_interface* scif=this->get_interface();
-	sca_tdf::sca_signal<T>* scasig=
-			dynamic_cast<sca_tdf::sca_signal<T>*>(scif);
-
-	if(scasig==NULL)
-	{
-		return;
-	}
-
-	scasig->release_value();
-}
-
-
-template<class T>
-bool sca_out<T>::register_trace_callback(
-		sca_util::sca_traceable_object::sca_trace_callback cb,
-		void* arg)
-{
-	sc_core::sc_interface* scif=this->get_interface();
-	sca_tdf::sca_signal<T>* scasig=
-			dynamic_cast<sca_tdf::sca_signal<T>*>(scif);
-
-	if(scasig==NULL)
-	{
-		return false;
-	}
-
-	return scasig->register_trace_callback(cb,arg);
-}
-
-
-template<class T>
-const std::string& sca_out<T>::get_trace_value() const
-{
-	const sc_core::sc_interface* scif=this->get_interface();
-	const sca_tdf::sca_signal<T>* scasig=
-			dynamic_cast<const sca_tdf::sca_signal<T>*>(scif);
-
-	if(scasig==NULL)
-	{
-		static const std::string empty_string;
-		return empty_string;
-	}
-
-	return scasig->get_trace_value();
-}
 
 
 template<class T>

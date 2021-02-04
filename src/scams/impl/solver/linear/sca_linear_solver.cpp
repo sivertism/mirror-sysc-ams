@@ -3,7 +3,7 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
 
@@ -29,10 +29,10 @@
 
  Created on: 10.11.2009
 
- SVN Version       :  $Revision: 1927 $
- SVN last checkin  :  $Date: 2016-02-26 12:32:21 +0100 (Fri, 26 Feb 2016) $
+ SVN Version       :  $Revision: 2102 $
+ SVN last checkin  :  $Date: 2020-02-21 14:58:34 +0000 (Fri, 21 Feb 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_linear_solver.cpp 1927 2016-02-26 11:32:21Z karsten $
+ SVN Id            :  $Id: sca_linear_solver.cpp 2102 2020-02-21 14:58:34Z karsten $
 
  *****************************************************************************/
 
@@ -69,29 +69,43 @@ sca_linear_solver::sca_linear_solver(std::vector<sca_module*>& mods,
 	std::cout << get_name() << ": constructed." << std::endl;
 #endif
 
+
+	//solver supports ac-simulation
+	this->ac_enable();
+
 	call_id=0;
 
-	 //the solver supports ac-simulation
-	 sca_ac_analysis::sca_implementation::sca_ac_domain_register_entity(
-	 this,
-	 NULL,
-	 static_cast<sca_ac_analysis::sca_implementation::sca_add_ac_domain_eq_method> (&sca_linear_solver::ac_domain_eq_method),
-	 static_cast<sca_ac_analysis::sca_implementation::sca_calc_add_eq_cons_method> (&sca_linear_solver::ac_add_eq_cons_method));
+	 equation_if=NULL;
+	 dt=0.0;
+	 pwl_dt_last=0.0;
+	 checkp_dt=0.0;
+	 ac_equation_initialized=false;
+	 pwl_coeff_available=false;
+
+	 reinit_methods=NULL;
+	 internal_solver_data=NULL;
+	 current_time=0.0;
+	 x_flat=NULL;
+	 equations=NULL;
+	 pwl_stamps=NULL;
+	 B=NULL;
+	 lin_solver_methods=NULL;
+	 reinit_dt=0.0;
+	 B_change=NULL;
+	 q=NULL;
+	 A=NULL;
+
 
 	 number_of_timesteps = 0;
 	 number_of_reinit = 0;
-	 number_of_woodbury = 0;
 
 	 cp_restored = false;
 	 first_timestep = true;
 
 	 force_implicit_euler_method = false;
+	 reinitialization_steps=-1;
 	 algorithm_set=false;
 	 algorithm_module=NULL;
-
-	 ignore_woodbury=true;
-	 woodbury_set=false;
-	 woodbury_module=NULL;
 
 
 	 pwl_iteration_cp =NULL;
@@ -188,62 +202,25 @@ void sca_linear_solver::set_solver_parameter(
 		return;
 	}
 
-
-	///////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////
-
-	if(par=="woodbury")
+	if(par=="reinitialization_steps")
 	{
-		if(woodbury_set)
+		std::istringstream istr(val);
+		int nsteps;
+		istr>>nsteps;
+		if(istr.fail())
 		{
-			if(woodbury_value!=val)
-			{
-				std::ostringstream str;
-				str << "The woodbury algorithm is set by module: ";
-				str << woodbury_module->name() << " to: " << woodbury_value;
-				str << " and by the module: " << mod->name();
-				str << " of the same cluster to: " << val;
-				str << " - second set is ignored";
-				SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
-			}
-
+			std::ostringstream str;
+			str << "Value: " << val << " for solver parameter: " << par;
+			str << " can't be read as integer value - parameter ignored";
+			SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
 			return;
 		}
 
-		if(mod!=NULL)
-		{
-			woodbury_set=true;
-			woodbury_value=val;
-			woodbury_module=mod;
-		}
-
-		if(val=="on")
-		{
-			ignore_woodbury=false;
-			return;
-		}
-
-		if(val=="off")
-		{
-			ignore_woodbury=true;
-			return;
-		}
-
-		std::ostringstream str;
-		str << "Unknown value: " << val << " for solver parameter: " << par;
-		if(mod==NULL)
-		{
-			str << " for default solver parameter";
-		}
-		else
-		{
-			str << " set by module: " << mod->name() << " of kind: " << mod->kind();
-		}
-		str << " valid values are on or off - ignore parameter";
-		SC_REPORT_WARNING("SystemC-AMS",str.str().c_str());
+		reinitialization_steps=nsteps;
 
 		return;
 	}
+
 
 	//parameter unknown -> print warning from base class
 	this->sca_solver_base::set_solver_parameter(mod,par,val);
@@ -528,25 +505,25 @@ int sca_linear_solver::check_pwl_intervals(int mode)
 		if((x_val<data.x_values[data.current_segment])   && (data.current_segment>0))
 		{
 			pwl_wrong=true;
-			//we change the segement only, if after the change, it differs
-			//not more than one from the last valid segment
-			if((data.current_segment>=data.last_valid_segment) && (mode!=1))
+			//we change the segment only, if after the change, it differs
+			//not more than one from the last valid segment or we are in the first timestep
+			if(((data.current_segment>=data.last_valid_segment) && (mode!=1))||first_timestep)
 			{
 				segment_changed=true;
 				data.new_segment=data.current_segment-1;
 			}
 		}
 		else
-			//if the current value is larger than the right intervall border and if
-			//this is not the last point, we are in the wron intervall
+			//if the current value is larger than the right interval border and if
+			//this is not the last point, we are in the wrong interval
 			if(     (data.current_segment+1<data.n_segments) &&
 					(x_val>data.x_values[data.current_segment+1])
 			  )
 			{
 				pwl_wrong=true;
-				//we change the segement only, if after the change, it differs
+				//we change the segment only, if after the change, it differs
 				//not more than one from the last valid segment
-				if((data.current_segment<=data.last_valid_segment) && (mode!=1))
+				if(((data.current_segment<=data.last_valid_segment) && (mode!=1))||first_timestep)
 				{
 					segment_changed=true;
 					data.new_segment=data.current_segment+1;
@@ -721,6 +698,11 @@ void sca_linear_solver::init_eq_system()
 	{
 		ana_set_algorithm(internal_solver_data,1);
 
+	}
+
+	if(reinitialization_steps>0)
+	{
+		ana_set_reinit_steps(internal_solver_data, reinitialization_steps-1);
 	}
 			
 	if (err) error_message(err, 0, 0.0);
@@ -1163,6 +1145,13 @@ void sca_linear_solver::solve_eq_system()
 
 	call_methods(&(lin_solver_methods->pre_solve_methods));
 
+	//may during a synchronization wait a ac simulation is performed
+	if (ac_equation_initialized) //restore time domain equations
+	{
+		equation_if->reinit_equations();
+		ac_equation_initialized = false;
+	}
+
 
 	if (equation_if->get_reinit_request() != 0)
 	{
@@ -1173,10 +1162,13 @@ void sca_linear_solver::solve_eq_system()
 		// !!!!!! as long as there are no changes in matrix A !!!!!!
 
 		init_flag=equation_if->get_reinit_request();
-		if (init_flag == 3 || init_flag == 4)
-							init_flag -= 2;
 
-		equation_if->get_reinit_request() = 0;
+		if (init_flag == 3 || init_flag == 4)
+		{
+			init_flag -= 2;
+		}
+
+		equation_if->get_reinit_request() = 0;  //reset request
 
 		last_reinit_flag=init_flag;
 	}
@@ -1263,6 +1255,8 @@ void sca_linear_solver::solve_eq_system()
 	}
 
 	(*this->get_allow_processing_access_flag_ref())=false;
+
+	first_timestep=false;
 }
 
 

@@ -26,10 +26,10 @@
 
   Created on: 13.11.2009
 
-   SVN Version       :  $Revision: 1671 $
-   SVN last checkin  :  $Date: 2014-02-08 11:43:30 +0100 (Sat, 08 Feb 2014) $
+   SVN Version       :  $Revision: 2110 $
+   SVN last checkin  :  $Date: 2020-03-04 16:36:49 +0000 (Wed, 04 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_trace_object_data.h 1671 2014-02-08 10:43:30Z karsten $
+   SVN Id            :  $Id: sca_trace_object_data.h 2110 2020-03-04 16:36:49Z karsten $
 
  *****************************************************************************/
 
@@ -79,6 +79,7 @@ public:
     {
     	if(type_info!=NULL) delete type_info;
     	type_info=new sca_type_explorer<T>();
+    	type_info->manipulate_trace_data(this);
     }
 
     sca_type_explorer_base& get_type_info();

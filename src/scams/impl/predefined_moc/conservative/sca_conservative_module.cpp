@@ -29,7 +29,7 @@
   Created on: 04.11.2009
 
    SVN Version       :  $Revision: 1892 $
-   SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $
+   SVN last checkin  :  $Date: 2016-01-10 11:59:12 +0000 (Sun, 10 Jan 2016) $
    SVN checkin by    :  $Author: karsten $
    SVN Id            :  $Id: sca_conservative_module.cpp 1892 2016-01-10 11:59:12Z karsten $
 

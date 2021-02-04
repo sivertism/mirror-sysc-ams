@@ -26,10 +26,10 @@
 
  Created on: 26.08.2009
 
- SVN Version       :  $Revision: 1920 $
- SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+ SVN Version       :  $Revision: 2133 $
+ SVN last checkin  :  $Date: 2020-03-27 14:06:08 +0000 (Fri, 27 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_synchronization_alg.cpp 1920 2016-02-25 12:43:37Z karsten $
+ SVN Id            :  $Id: sca_synchronization_alg.cpp 2133 2020-03-27 14:06:08Z karsten $
 
  *****************************************************************************/
 
@@ -68,6 +68,8 @@ sca_synchronization_alg::sca_sync_objT::sca_sync_objT()
     object_data=NULL;
     sync_if=NULL;
     nin=0;
+
+    current_context_ref=NULL;
 }
 
 sca_synchronization_alg::sca_synchronization_alg()
@@ -77,6 +79,8 @@ sca_synchronization_alg::sca_synchronization_alg()
 	scheduling_list_warning_printed = false;
 
 	sync_obj_mem = NULL;
+
+	current_context=NULL;
 }
 
 sca_synchronization_alg::~sca_synchronization_alg()
@@ -112,6 +116,7 @@ void sca_synchronization_alg::initialize(std::vector<
 
 		//initialize objects for analyzer to speed up (re-) analyzing process
 		sync_obj_mem[id_cnt].init(*sit);
+		sync_obj_mem[id_cnt].current_context_ref=&current_context;
 	}
 
 	check_closed_graph();
@@ -350,6 +355,7 @@ void sca_synchronization_alg::cluster()
 		cluster_tmp->dead_cluster = false;
 		cluster_tmp->csync_data.cluster_id=cluster_id;
 
+		//get reference to sync object memory
 		sca_sync_objT* current_obj;
 		current_obj = &(sync_obj_mem[(*sync_obj)->get_synchronization_object_data()->id]);
 
@@ -389,7 +395,8 @@ void sca_synchronization_alg::cluster()
 sca_synchronization_alg::sca_sync_objT*
 sca_synchronization_alg::move_obj_if_not_done(
 		sca_synchronization_obj_if* sync_obj, sca_cluster_objT* cluster_,
-		long cluster_id)
+		long cluster_id,
+		std::vector<sca_sync_objT*>& todo_list)
 {
 	sca_cluster_synchronization_data* cluster_data=&(cluster_->csync_data);
 	sca_synchronization_object_data* object_data=sync_obj->get_synchronization_object_data();
@@ -407,7 +414,14 @@ sca_synchronization_alg::move_obj_if_not_done(
 			cluster_->dead_cluster = true;
 
 		//recursive method which moves all connected objects to the cluster
-		move_connected_objs(cluster_, cluster_id, next_obj);
+		//move_connected_objs(cluster_, cluster_id, next_obj);
+
+		//prevent resize in every iteration
+		if(todo_list.capacity()<=todo_list.size())
+		{
+			todo_list.reserve(todo_list.size()+1000);
+		}
+		todo_list.push_back(next_obj);
 
 		return next_obj;
 	}
@@ -426,135 +440,146 @@ sca_synchronization_alg::move_obj_if_not_done(
 ///////////////////////////////////////////////////////////////////////////////
 
 void sca_synchronization_alg::move_connected_objs(sca_cluster_objT* cluster_,
-		long cluster_id, sca_sync_objT* current_obj)
+		long cluster_id, sca_sync_objT* current_obj_)
 {
 
 	sca_cluster_synchronization_data* cluster_data=&(cluster_->csync_data);
 
-	//go first in the dirction of all outports
-	unsigned long nop;
-	nop = current_obj->sync_if->get_number_of_sync_ports(SCA_TO_ANALOG);
+	std::vector<sca_sync_objT*> todo_list;
+	todo_list.reserve(1000); //prevent resize
+	todo_list.push_back(current_obj_);
 
-	for (unsigned long opnr = 0; opnr < nop; opnr++)
+	while(todo_list.size()>0)
 	{
-		//get current outport
-		sca_synchronization_port_data* cport;
-		cport = current_obj->sync_if->get_sync_port(SCA_TO_ANALOG, opnr);
 
-		//get sampling rate of current port
-		long port_rate = *(cport -> rate);
+		sca_sync_objT* current_obj=todo_list.back();
+		todo_list.pop_back();
 
-		//initialize for scheduling analysis
-		current_obj->out_rates[opnr] = port_rate;
+		//go first in the dirction of all outports
+		unsigned long nop;
+		nop = current_obj->sync_if->get_number_of_sync_ports(SCA_TO_ANALOG);
 
-		//get channel connected to current port
-		//dynamic cast checked during add_port
-		sca_prim_channel* scaif =
-				dynamic_cast<sca_prim_channel*> (cport -> channel);
-
-		if(cluster_id!=scaif->cluster_id)
+		for (unsigned long opnr = 0; opnr < nop; opnr++)
 		{
-			scaif->cluster_id=cluster_id;
-			cluster_->channels.push_back(scaif);
-		}
+			//get current outport
+			sca_synchronization_port_data* cport;
+			cport = current_obj->sync_if->get_sync_port(SCA_TO_ANALOG, opnr);
 
-		//an outport drives one or more inports but no other outport
-		//get number of connected inports
-		unsigned long ncip = (unsigned long)(scaif -> get_connected_sync_ports(false).size());
-		current_obj->next_inports[opnr].resize(ncip);
-		for (unsigned long cipnr = 0; cipnr < ncip; cipnr++)
-		{
-			//get next connected inport
-			sca_synchronization_port_data *ciport =
-					scaif->get_connected_sync_ports(false)[cipnr];
+			//get sampling rate of current port
+			long port_rate = *(cport -> rate);
 
-			//get solver which is of the sync_port
-			sca_synchronization_obj_if* con_sync_obj = ciport -> parent_obj;
+			//initialize for scheduling analysis
+			current_obj->out_rates[opnr] = port_rate;
 
-			if (port_rate != 0)
+			//get channel connected to current port
+			//dynamic cast checked during add_port
+			sca_prim_channel* scaif =
+					dynamic_cast<sca_prim_channel*> (cport -> channel);
+
+			if(cluster_id!=scaif->cluster_id)
 			{
-				sca_sync_objT* con_alg_obj;
-				//if not yet done it moves the object and all connected objects to
-				//the cluster and returns a pointer to the corresponding
-				//synchronization cur_algorithm object
-				con_alg_obj = move_obj_if_not_done(con_sync_obj, cluster_, cluster_id);
-
-				//initialize datastructure for scheduling analysis
-				//connect references to connected inports
-				current_obj->next_inports[opnr][cipnr]
-						= &(con_alg_obj->sample_inports[ciport->sync_port_number]);
-				//initialize sample counter with number of delays
-				*(current_obj->next_inports[opnr][cipnr]) += *(cport -> delay);
+				scaif->cluster_id=cluster_id;
+				cluster_->channels.push_back(scaif);
 			}
-			else
+
+			//an outport drives one or more inports but no other outport
+			//get number of connected inports
+			unsigned long ncip = (unsigned long)(scaif -> get_connected_sync_ports(false).size());
+			current_obj->next_inports[opnr].resize(ncip);
+			for (unsigned long cipnr = 0; cipnr < ncip; cipnr++)
 			{
+				//get next connected inport
+				sca_synchronization_port_data *ciport =
+						scaif->get_connected_sync_ports(false)[cipnr];
+
+				//get solver which is of the sync_port
+				sca_synchronization_obj_if* con_sync_obj = ciport -> parent_obj;
+
+				if (port_rate != 0)
+				{
+					sca_sync_objT* con_alg_obj;
+					//if not yet done it moves the object and all connected objects to
+					//the cluster and returns a pointer to the corresponding
+					//synchronization cur_algorithm object
+					con_alg_obj = move_obj_if_not_done(con_sync_obj, cluster_, cluster_id,todo_list);
+
+					//initialize datastructure for scheduling analysis
+					//connect references to connected inports
+					current_obj->next_inports[opnr][cipnr]
+													= &(con_alg_obj->sample_inports[ciport->sync_port_number]);
+					//initialize sample counter with number of delays
+					*(current_obj->next_inports[opnr][cipnr]) += *(cport -> delay);
+				}
+				else
+				{
 #ifdef SCA_IMPLEMENTATION_DEBUG
 				std::cout << "----- dead module : " << con_sync_obj->get_name_associated_names(5) << std::endl;
 #endif
-				sca_synchronization_object_data* object_data=con_sync_obj->get_synchronization_object_data();
+					sca_synchronization_object_data* object_data=con_sync_obj->get_synchronization_object_data();
 
-				//dead clusters not yet supported
-				std::ostringstream str;
-				str << std::endl;
-				str << "Rate=0 not allowed for port: "
+					//dead clusters not yet supported
+					std::ostringstream str;
+					str << std::endl;
+					str << "Rate=0 not allowed for port: "
 						<< cport->port->sca_name() << std::endl << std::endl;
-				SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+					SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
 
+					cluster_data->dead_cluster = true;
+					if (object_data->cluster_id >= 0)
+						clusters[object_data->cluster_id]->dead_cluster = true;
+				}
+			} //for(cipnr=0;cipnr<ncip;cipnr++) -- for all connected inports
+		} //for(unsigned long opnr=0;opnr<nop;opnr++) -- for all outports
+
+
+		//now do the same for all inports
+		unsigned long nip;
+		nip = current_obj->sync_if->get_number_of_sync_ports(SCA_FROM_ANALOG);
+
+		for (unsigned long ipnr = 0; ipnr < nip; ipnr++)
+		{
+			//get driving outport
+			sca_synchronization_port_data* cport;
+			cport = current_obj->sync_if->get_sync_port(SCA_FROM_ANALOG, ipnr);
+
+			//get sampling rate of current port
+			long port_rate = *(cport -> rate);
+
+			current_obj->in_rates[ipnr] = port_rate;
+			current_obj->sample_inports[ipnr] += *(cport -> delay);
+
+			//get channel connected to current port
+			sca_prim_channel* scaif =
+					dynamic_cast<sca_prim_channel*> (cport -> channel);
+
+			//an inport is driven by one outport only
+
+			//get connected outport
+			sca_synchronization_port_data *coport = scaif->get_connected_sync_ports(true)[0];
+
+			//get solver of the sync outport
+			sca_synchronization_obj_if* con_sync_obj = coport -> parent_obj;
+			sca_synchronization_object_data* object_data=con_sync_obj->get_synchronization_object_data();
+
+			if (port_rate != 0)
+			{
+				move_obj_if_not_done(con_sync_obj, cluster_, cluster_id,todo_list);
+			}
+			else
+			{
 				cluster_data->dead_cluster = true;
 				if (object_data->cluster_id >= 0)
 					clusters[object_data->cluster_id]->dead_cluster = true;
-			}
-		} //for(cipnr=0;cipnr<ncip;cipnr++) -- for all connected inports
-	} //for(unsigned long opnr=0;opnr<nop;opnr++) -- for all outports
 
-
-	//now do the same for all inports
-	unsigned long nip;
-	nip = current_obj->sync_if->get_number_of_sync_ports(SCA_FROM_ANALOG);
-
-	for (unsigned long ipnr = 0; ipnr < nip; ipnr++)
-	{
-		//get driving outport
-		sca_synchronization_port_data* cport;
-		cport = current_obj->sync_if->get_sync_port(SCA_FROM_ANALOG, ipnr);
-
-		//get sampling rate of current port
-		long port_rate = *(cport -> rate);
-
-		current_obj->in_rates[ipnr] = port_rate;
-		current_obj->sample_inports[ipnr] += *(cport -> delay);
-
-		//get channel connected to current port
-		sca_prim_channel* scaif =
-				dynamic_cast<sca_prim_channel*> (cport -> channel);
-
-		//an inport is driven by one outport only
-
-		//get connected outport
-		sca_synchronization_port_data *coport = scaif->get_connected_sync_ports(true)[0];
-
-		//get solver of the sync outport
-		sca_synchronization_obj_if* con_sync_obj = coport -> parent_obj;
-		sca_synchronization_object_data* object_data=con_sync_obj->get_synchronization_object_data();
-
-		if (port_rate != 0)
-		{
-			move_obj_if_not_done(con_sync_obj, cluster_, cluster_id);
-		}
-		else
-		{
-			cluster_data->dead_cluster = true;
-			if (object_data->cluster_id >= 0)
-				clusters[object_data->cluster_id]->dead_cluster = true;
-
-			std::ostringstream str;
-			str << std::endl;
-			str << "rate=0 not allowed for port: " << cport->port->sca_name()
+				std::ostringstream str;
+				str << std::endl;
+				str << "rate=0 not allowed for port: " << cport->port->sca_name()
 					<< std::endl << std::endl;
-			SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
-		}
+				SC_REPORT_ERROR("SystemC-AMS",str.str().c_str());
+			}
 
-	} //for(unsigned long ipnr=0;ipnr<nip;ipnr++) -- for all inports
+		} //for(unsigned long ipnr=0;ipnr<nip;ipnr++) -- for all inports
+	} //while(todo_list.size()>0)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -897,6 +922,12 @@ inline void sca_synchronization_alg::check_sample_time_consistency(
 		current_cluster->T_last = c_timestep;
 	} else
 	{
+		if(last_n_sample==0)
+		{
+			SC_REPORT_ERROR("SystemC-AMS","Internal error last_n_sample=0");
+			return;
+		}
+
 		//scaling to smaller current T
 		ti_dt = ti_set / (n_sample / last_n_sample) - ti_exp;
 	}
@@ -1495,6 +1526,7 @@ inline void sca_synchronization_alg::generate_scheduling_list_expand_list(
 			ele->call_counter = &(sync_obj_data->call_counter);
 			ele->id_counter   = &(sync_obj_data->id_counter);
 			ele->allow_processing_access = &(sync_obj_data->allow_processing_access_flag);
+			ele->current_context_ref=&this->current_context;
 			*(ele->allow_processing_access) = false;
 			(*slit) = ele;
 			slit++;
@@ -1718,8 +1750,9 @@ void sca_synchronization_alg::sca_sync_objT::call_init_method()
 
 	if(cmod!=NULL) cmod->initialize_executes_flag=true;
 
+	*this->current_context_ref=obj;
 	if(obj!=NULL)  (obj->*(meth))();
-
+	*this->current_context_ref=NULL;
 
 	if(cmod!=NULL) cmod->initialize_executes_flag=false;
 
@@ -1748,7 +1781,10 @@ bool sca_synchronization_alg::sca_sync_objT::call_change_attributes_method()
 		                         //due change_attributes is may not executed we make this correction
 		                         //the counter is increased after processing
 
+		*this->current_context_ref=obj;
 		(cmod->*(cmod->change_attributes_method))();
+		*this->current_context_ref=NULL;
+
 		cmod->validate_port_attributes();
 
 		(*cmod->call_counter)++; //restore call counter
@@ -1973,7 +2009,11 @@ bool sca_synchronization_alg::sca_sync_objT::call_reinit_method()
 	else
 	{
 		cmod->reinitialize_executes_flag=true;
+
+		*this->current_context_ref=reinit_obj;
 		(cmod->*(cmod->reinitialize_method))();
+		*this->current_context_ref=NULL;
+
 		cmod->reinitialize_executes_flag=false;
 	}
 

@@ -3,6 +3,9 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
+    Copyright 2015-2020
+    COSEDA Technologies GmbH
+
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +29,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1910 $
-   SVN last checkin  :  $Date: 2016-02-16 13:44:37 +0100 (Tue, 16 Feb 2016) $
+   SVN Version       :  $Revision: 2112 $
+   SVN last checkin  :  $Date: 2020-03-12 13:06:46 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_tdf_isink.cpp 1910 2016-02-16 12:44:37Z karsten $
+   SVN Id            :  $Id: sca_eln_tdf_isink.cpp 2112 2020-03-12 13:06:46Z karsten $
 
  *****************************************************************************/
 
@@ -65,11 +68,10 @@ void sca_isink::trace( sc_core::sc_trace_file* tf ) const
 sca_isink::	sca_isink(sc_core::sc_module_name, double scale_) :
 	p("p"), n("n"), outp("outp"), scale("scale", scale_)
 {
-    through_value_available = true;
-    through_value_type      = "I";
-    through_value_unit      = "A";
-
     nadd=-1;
+
+	unit="A";
+	domain="I";
 }
 
 
@@ -100,13 +102,9 @@ void sca_isink::matrix_stamps()
 
 bool sca_isink::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type=through_value_type;
-    data.unit=through_value_unit;
-
     //trace will be activated after every complete cluster calculation
     //by teh synchronization layer
-    get_sync_domain()->add_solver_trace(data);
-    return true;
+    return get_sync_domain()->add_solver_trace(data);
 }
 
 void sca_isink::trace(long id,sca_util::sca_implementation::sca_trace_buffer& buffer)
@@ -122,6 +120,38 @@ sca_util::sca_complex sca_isink::calculate_ac_result(sca_util::sca_complex* res_
 	return res_vec[nadd];
 }
 
+/**
+   * experimental physical domain interface
+*/
+void sca_isink::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_isink::get_unit() const
+{
+	return unit;
+}
+
+void sca_isink::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_isink::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_isink::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_isink::get_domain() const
+{
+	return domain;
+}
 
 
 } //namespace sca_tdf

@@ -27,7 +27,7 @@
  Created on: 14.05.2009
 
  SVN Version       :  $Revision: 1920 $
- SVN last checkin  :  $Date: 2016-02-25 13:43:37 +0100 (Thu, 25 Feb 2016) $
+ SVN last checkin  :  $Date: 2016-02-25 12:43:37 +0000 (Thu, 25 Feb 2016) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: sca_view_object.h 1920 2016-02-25 12:43:37Z karsten $
 

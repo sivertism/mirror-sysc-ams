@@ -3,7 +3,7 @@
     Copyright 2010
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
  Created on: 07.03.2009
 
- SVN Version       :  $Revision: 1964 $
- SVN last checkin  :  $Date: 2016-03-22 13:08:33 +0100 (Tue, 22 Mar 2016) $ (UTC)
+ SVN Version       :  $Revision: 2132 $
+ SVN last checkin  :  $Date: 2020-03-27 13:40:11 +0000 (Fri, 27 Mar 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_eln_node.h 1964 2016-03-22 12:08:33Z karsten $
+ SVN Id            :  $Id: sca_eln_node.h 2132 2020-03-27 13:40:11Z karsten $
 
  *****************************************************************************/
 /*
@@ -87,6 +87,23 @@ public:
 	 * is a new eln result is available
 	 */
 	bool register_trace_callback(sca_util::sca_traceable_object::sca_trace_callback,void*);
+	bool register_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+	bool remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base&);
+
+	/**
+	 * experimental physical domain mehtods
+	 */
+	virtual void set_unit(const std::string& unit);
+	virtual const std::string& get_unit() const;
+
+	virtual void set_unit_prefix(const std::string& prefix);
+	virtual const std::string& get_unit_prefix() const;
+
+	virtual void set_domain(const std::string& domain);
+	virtual const std::string& get_domain() const;
+
+	virtual void print( std::ostream& = std::cout ) const;
+	virtual void dump( std::ostream& = std::cout ) const;
 
 private:
 	// Disabled
@@ -112,6 +129,9 @@ private:
 
 	mutable sca_core::sca_implementation::sca_con_interactive_trace_data* trd;
 
+	std::string unit;
+	std::string unit_prefix;
+	std::string domain;
 
 // end implementation specific
 };

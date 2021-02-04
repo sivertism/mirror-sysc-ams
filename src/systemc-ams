@@ -3,7 +3,7 @@
     Copyright 2010-2014
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
     
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,14 +25,14 @@
 
   systemc-ams - Top-level namespace-based include file for the SystemC AMS library.
 
-  Original Author: Karsten Einwich Fraunhofer IIS/EAS Dresden
+  Original Author: Karsten Einwich COSEDA Technologies GmbH
 
   Created on: 03.03.2009
 
-   SVN Version       :  $Revision: 1949 $
-   SVN last checkin  :  $Date: 2016-03-18 14:45:00 +0100 (Fri, 18 Mar 2016) $
+   SVN Version       :  $Revision: 2102 $
+   SVN last checkin  :  $Date: 2020-02-21 14:58:34 +0000 (Fri, 21 Feb 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: systemc-ams 1949 2016-03-18 13:45:00Z karsten $
+   SVN Id            :  $Id: systemc-ams 2102 2020-02-21 14:58:34Z karsten $
 
  *****************************************************************************/
 /*
@@ -50,7 +50,15 @@
 #ifndef SYSTEMCAMS_
 #define SYSTEMCAMS_
 
+//implementation specific section
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+//end implementation specific
+
+
 #include "systemc"
+
 
 //implementation specific section
 #include <string>
@@ -65,11 +73,21 @@
 #include <iomanip>
 #include <limits>
 #include <utility>
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI  (3.141592653589793238463)
+#endif 
+
 //end implementation specific
 
 /////////////////// core /////////////////////////////////
 
 
+#include "scams/analysis/ac/sca_ac_object.h"
+#include "scams/analysis/ac/sca_ac_module.h"
+
+#include "scams/core/sca_physical_domain_interface.h"
 #include "scams/core/sca_time.h"
 #include "scams/impl/core/sca_signed_time.h" //implementation defined
 #include "scams/core/sca_max_time.h"
@@ -215,6 +233,10 @@
 #include "scams/predefined_moc/lsf/sca_lsf_tdf_mux.h"
 #include "scams/predefined_moc/lsf/sca_lsf_tdf_sink.h"
 #include "scams/predefined_moc/lsf/sca_lsf_tdf_source.h"
+#include "scams/predefined_moc/lsf/sca_lsf_lsf_gain.h"
+#include "scams/predefined_moc/lsf/sca_lsf_lsf_demux.h"
+#include "scams/predefined_moc/lsf/sca_lsf_lsf_mux.h"
+
 
 #include "scams/predefined_moc/eln/sca_eln_module.h"  
 #include "scams/predefined_moc/eln/sca_eln_node_if.h"
@@ -250,6 +272,12 @@
 #include "scams/predefined_moc/eln/sca_eln_vccs.h"
 #include "scams/predefined_moc/eln/sca_eln_vcvs.h"
 #include "scams/predefined_moc/eln/sca_eln_vsource.h"
+#include "scams/predefined_moc/eln/sca_eln_vcr.h"
+#include "scams/predefined_moc/eln/sca_eln_vcc.h"
+#include "scams/predefined_moc/eln/sca_eln_vcl.h"
+#include "scams/predefined_moc/eln/sca_eln_ccr.h"
+#include "scams/predefined_moc/eln/sca_eln_ccc.h"
+#include "scams/predefined_moc/eln/sca_eln_ccl.h"
 
 
 ////////////////// analysis ///////////////////////////

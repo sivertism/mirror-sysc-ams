@@ -28,10 +28,10 @@
 
  Created on: 13.11.2009
 
- SVN Version       :  $Revision: 1927 $
- SVN last checkin  :  $Date: 2016-02-26 12:32:21 +0100 (Fri, 26 Feb 2016) $
+ SVN Version       :  $Revision: 2108 $
+ SVN last checkin  :  $Date: 2020-03-03 11:39:53 +0000 (Tue, 03 Mar 2020) $
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_trace_file_base.cpp 1927 2016-02-26 11:32:21Z karsten $
+ SVN Id            :  $Id: sca_trace_file_base.cpp 2108 2020-03-03 11:39:53Z karsten $
 
  *****************************************************************************/
 
@@ -41,6 +41,7 @@
 #include "scams/impl/util/tracing/sca_trace_file_base.h"
 #include "scams/impl/util/tracing/sca_trace_buffer.h"
 #include "scams/impl/core/sca_simcontext.h"
+#include "scams/impl/core/sca_object_manager.h"
 
 namespace sca_util
 {
@@ -109,10 +110,18 @@ void sca_trace_file_base::add(sca_traceable_object* obj,
 	//store trace infos
 	traces.resize(id + 1);
 
+
 	traces[id].trace_object = obj;
 	traces[id].name = name;
 	traces[id].id = id;
 	traces[id].dont_interpolate = dont_interpolate;
+
+	sca_core::sca_physical_domain_interface* phd=dynamic_cast<sca_core::sca_physical_domain_interface*>(obj);
+	if(phd!=NULL)
+	{
+		traces[id].unit=phd->get_unit();
+		traces[id].type=phd->get_domain();
+	}
 
 }
 
@@ -244,6 +253,7 @@ void sca_trace_file_base::create_trace_file(const std::string& name,
 		SC_REPORT_ERROR("SystemC-AMS", str.c_str());
 	}
 
+	fname=name;
 	outstr = &fout;
 }
 
@@ -280,8 +290,6 @@ void sca_trace_file_base::reopen(const std::string& name,
 		return;
 	}
 
-	if (!ac_active)
-		write_to_file();
 
 	if (fout)
 	{
@@ -295,8 +303,6 @@ void sca_trace_file_base::reopen(const std::string& name,
 		outstr = NULL;
 	}
 
-	if (!trace_is_disabled)
-		enable();
 
 	if ((m & std::ios::app) != (std::ios::app))
 	{
@@ -307,9 +313,6 @@ void sca_trace_file_base::reopen(const std::string& name,
 		header_written = true;
 	}
 
-	for (int i = 0; i < nwords; i++)
-		written_flags[i] = disabled_traces[i];
-
 	fout.open(name.c_str(), m);
 	if (!fout)
 	{
@@ -317,6 +320,7 @@ void sca_trace_file_base::reopen(const std::string& name,
 		SC_REPORT_ERROR("SystemC-AMS", str.c_str());
 	}
 
+	fname=name;
 	outstr = &fout;
 }
 
@@ -336,8 +340,6 @@ void sca_trace_file_base::reopen(std::ostream& str)
 		return;
 	}
 
-	if (!ac_active)
-		write_to_file();
 
 	if (fout)
 	{
@@ -351,14 +353,10 @@ void sca_trace_file_base::reopen(std::ostream& str)
 		outstr = NULL;
 	}
 
-	if (!trace_is_disabled)
-		enable();
 
 	header_written = false;
 
-	for (int i = 0; i < nwords; i++)
-		written_flags[i] = disabled_traces[i];
-
+	fname.clear();
 	outstr = &str;
 }
 
@@ -401,8 +399,53 @@ void sca_trace_file_base::close_trace()
 		return;
 	}
 
+	if(sca_core::sca_implementation::sca_get_curr_simcontext()==NULL)
+	{
+		std::ostringstream str;
+		str << "SystemC AMS simcontext deleted before closing the trace file ";
+		if(fname.size()>0)
+		{
+			str << "  " << fname << "  ";
+		}
+		str << "(module or signal was deleted)";
+
+		SC_REPORT_WARNING("SytemC-AMS",str.str().c_str());
+		return;
+	}
+
+	if(sca_core::sca_implementation::sca_get_curr_simcontext()->get_sca_object_manager()==NULL)
+	{
+		std::ostringstream str;
+		str << "SystemC AMS object manager deleted before closing the trace file ";
+		if(fname.size()>0)
+		{
+			str << "  " << fname << "  ";
+		}
+		str << "(module or signal was deleted)";
+
+
+		SC_REPORT_WARNING("SytemC-AMS",str.str().c_str());
+		return;
+	}
+
+
+	if(sca_core::sca_implementation::sca_get_curr_simcontext()->get_sca_object_manager()->is_object_deleted())
+	{
+		std::ostringstream str;
+		str << "SystemC AMS module or signal was deleted before closing the trace file ";
+		if(fname.size()>0)
+		{
+			str << "  " << fname;
+		}
+
+		SC_REPORT_WARNING("SytemC-AMS",str.str().c_str());
+		return;
+	}
+
 	//after an error the datastructures may not consistent - we dont perform finish writing
-	if (sc_core::sc_report_handler::get_count(sc_core::SC_ERROR) <= 0)
+	//only if time domain header was written to the current file datastructures may valid
+	//if ac - simulation was executed only -> no header was written
+	if ( (sc_core::sc_report_handler::get_count(sc_core::SC_ERROR) <= 0) && header_written)
 	{
 
 		for (unsigned long i = 0; i < traces.size(); i++)

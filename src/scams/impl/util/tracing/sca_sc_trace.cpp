@@ -26,10 +26,10 @@
 
   Created on: 09.12.2009
 
-   SVN Version       :  $Revision: 1383 $
-   SVN last checkin  :  $Date: 2012-10-25 18:12:10 +0200 (Thu, 25 Oct 2012) $
+   SVN Version       :  $Revision: 2106 $
+   SVN last checkin  :  $Date: 2020-02-26 15:58:39 +0000 (Wed, 26 Feb 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_sc_trace.cpp 1383 2012-10-25 16:12:10Z karsten $
+   SVN Id            :  $Id: sca_sc_trace.cpp 2106 2020-02-26 15:58:39Z karsten $
 
  *****************************************************************************/
 
@@ -73,7 +73,7 @@ void sc_trace_functor::operator()()
 
 	if(obj->data!=NULL)
 	{
-        obj->data->trace();
+        if(!sca_ac_analysis::sca_ac_is_running()) obj->data->trace();
 	}
 
 	//we use dynamic sensitivity -> thus if we access to the event of a port, the port
@@ -106,9 +106,6 @@ bool sca_sc_trace_base::trace_init(sca_trace_object_data& data_)
 	data=&data_;
 
 	set_type_info(data_);
-
-    data->type="-";
-    data->unit="-";
 
     data->event_driven=true;
     data->dont_interpolate=true;

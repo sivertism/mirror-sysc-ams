@@ -27,7 +27,7 @@
  Created on: October 09, 2012
 
  SVN Version       :  $Revision: 1715 $
- SVN last checkin  :  $Date: 2014-04-27 16:37:25 +0200 (Sun, 27 Apr 2014) $
+ SVN last checkin  :  $Date: 2014-04-27 14:37:25 +0000 (Sun, 27 Apr 2014) $
  SVN checkin by    :  $Author: karsten $
  SVN Id            :  $Id: linear_direct_sparse.h 1715 2014-04-27 14:37:25Z karsten $
 

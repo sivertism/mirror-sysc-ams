@@ -3,7 +3,7 @@
     Copyright 2010-2013
     Fraunhofer-Gesellschaft zur Foerderung der angewandten Forschung e.V.
 
-    Copyright 2015-2016
+    Copyright 2015-2020
     COSEDA Technologies GmbH
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,10 +28,10 @@
 
   Created on: 10.11.2009
 
-   SVN Version       :  $Revision: 1892 $
-   SVN last checkin  :  $Date: 2016-01-10 12:59:12 +0100 (Sun, 10 Jan 2016) $
+   SVN Version       :  $Revision: 2112 $
+   SVN last checkin  :  $Date: 2020-03-12 13:06:46 +0000 (Thu, 12 Mar 2020) $
    SVN checkin by    :  $Author: karsten $
-   SVN Id            :  $Id: sca_eln_sc_vsource.cpp 1892 2016-01-10 11:59:12Z karsten $
+   SVN Id            :  $Id: sca_eln_sc_vsource.cpp 2112 2020-03-12 13:06:46Z karsten $
 
  *****************************************************************************/
 
@@ -54,15 +54,14 @@ namespace sca_de
 sca_vsource::sca_vsource(sc_core::sc_module_name, double scale_) :
 	p("p"), n("n"), inp("inp"), scale("scale", scale_)
 {
-    through_value_available = true;
-    through_value_type      = "I";
-    through_value_unit      = "A";
-
     //IMPROVE: find better solution -> inserts additional port in database
     conv_port=new ::sca_tdf::sca_de::sca_in<double>("converter_port");
     conv_port->bind(inp);
 
     nadd=-1;
+
+	unit="A";
+	domain="I";
 }
 
 const char* sca_vsource::kind() const
@@ -87,7 +86,8 @@ double sca_vsource::v_t()
     }
     else
     {
-        double val = scale * sca_ac_analysis::sca_implementation::sca_ac(inp).real();
+    	//sc_signal has no ac
+        double val = 0.0;
         return val;
     }
 }
@@ -107,13 +107,9 @@ void sca_vsource::matrix_stamps()
 
 bool sca_vsource::trace_init(sca_util::sca_implementation::sca_trace_object_data& data)
 {
-    data.type=through_value_type;
-    data.unit=through_value_unit;
-
     //trace will be activated after every complete cluster calculation
     //by teh synchronization layer
-    get_sync_domain()->add_solver_trace(data);
-    return true;
+    return get_sync_domain()->add_solver_trace(data);
 }
 
 void sca_vsource::trace(long id,sca_util::sca_implementation::sca_trace_buffer& buffer)
@@ -178,6 +174,68 @@ bool sca_vsource::register_trace_callback(sca_trace_callback cb,void* cb_arg)
 	return true;
 
 }
+
+
+bool sca_vsource::register_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		this->trd=new sca_core::sca_implementation::sca_con_interactive_trace_data(this);
+	}
+
+
+	this->trd->register_trace_callback(func);
+
+	return true;
+
+}
+
+
+bool sca_vsource::remove_trace_callback(sca_util::sca_traceable_object::callback_functor_base& func)
+{
+	if(this->trd==NULL)
+	{
+		return false;
+	}
+
+
+	return this->trd->remove_trace_callback(func);
+
+}
+
+/**
+   * experimental physical domain interface
+*/
+void sca_vsource::set_unit(const std::string& unit_)
+{
+	unit=unit_;
+}
+
+const std::string& sca_vsource::get_unit() const
+{
+	return unit;
+}
+
+void sca_vsource::set_unit_prefix(const std::string& prefix_)
+{
+	unit_prefix=prefix_;
+}
+
+const std::string& sca_vsource::get_unit_prefix() const
+{
+	return unit_prefix;
+}
+
+void sca_vsource::set_domain(const std::string& domain_)
+{
+	domain=domain_;
+}
+
+const std::string& sca_vsource::get_domain() const
+{
+	return domain;
+}
+
 
 } //namespace sca_de
 } //namespace sca_eln

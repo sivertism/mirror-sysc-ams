@@ -22,7 +22,8 @@ CXX_FILES = \
 	sca_ac_domain_globals.cpp \
 	sca_ac_start.cpp \
 	sca_ac_noise_start.cpp \
-	sca_ac_functions.cpp
+	sca_ac_functions.cpp \
+	sca_ac_object.cpp
 
 NO_CXX_FILES =
 

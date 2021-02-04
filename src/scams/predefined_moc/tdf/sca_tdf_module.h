@@ -28,10 +28,10 @@
 
  Created on: 04.03.2009
 
- SVN Version       :  $Revision: 1947 $
- SVN last checkin  :  $Date: 2016-03-13 21:11:21 +0100 (Sun, 13 Mar 2016) $ (UTC)
+ SVN Version       :  $Revision: 2082 $
+ SVN last checkin  :  $Date: 2020-01-24 13:06:35 +0000 (Fri, 24 Jan 2020) $ (UTC)
  SVN checkin by    :  $Author: karsten $
- SVN Id            :  $Id: sca_tdf_module.h 1947 2016-03-13 20:11:21Z karsten $
+ SVN Id            :  $Id: sca_tdf_module.h 2082 2020-01-24 13:06:35Z karsten $
 
  *****************************************************************************/
 /*
@@ -63,7 +63,8 @@ class sca_port_attributes;
 //end implementation specific
 
 //class sca_module : public implementation-derived-from sca_core::sca_module
-class sca_module: public sca_core::sca_module
+class sca_module: public sca_core::sca_module,
+                  public sca_ac_analysis::sca_ac_module
 {
 public:
 
@@ -225,6 +226,9 @@ private:
 	  //event list handling for request_next_activation
 	  mutable sc_dt::int64 does_attr_ch_id;
 	  mutable sc_dt::int64 accept_attr_ch_id;
+
+	  //empty ac implementation -> executed in the default case
+	  virtual void ac_dummy();
 
 // end implementation specific section
 
